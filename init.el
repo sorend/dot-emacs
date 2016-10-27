@@ -34,6 +34,7 @@
 (setq inhibit-startup-message t) ;; hide the startup message
 (load-theme 'material t) ;; load material theme
 (global-hl-line-mode)
+(add-hook 'before-save-hook 'delete-trailing-whitespace) ;; reove whitespace
 
 (use-package flycheck)
 
