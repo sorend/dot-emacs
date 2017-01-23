@@ -2,6 +2,11 @@
 
 ;; BASIC INSTALL PACKAGES
 ;; ----------------------
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp"))
+
+(setq url-proxy-services '(("no_proxy" . "127.0.0.1")
+                           ("http" . "127.0.0.1:3128")
+			   ("https" . "127.0.0.1:3128")))
 
 (toggle-frame-maximized)
 (setq use-package-always-ensure t)
@@ -27,14 +32,24 @@
   (setq auto-save-file-name-transforms
         `((".*" ,temporary-file-directory t))))
 
+(use-package material-theme
+  :config
+  (load-theme 'material t))
+
 ;;
 ;; BASIC CONFIG
 ;; ------------
 (windmove-default-keybindings)
 (setq inhibit-startup-message t) ;; hide the startup message
-(load-theme 'material t) ;; load material theme
+;; (load-theme 'material t) ;; load material theme
 (global-hl-line-mode)
-(add-hook 'before-save-hook 'delete-trailing-whitespace) ;; reove whitespace
+
+;; disable auto fill mode
+(auto-fill-mode -1)
+(remove-hook 'text-mode-hook #'turn-on-auto-fill)
+
+;; we hate this crap
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 (use-package flycheck)
 
@@ -186,12 +201,13 @@
 (use-package ace-window
              :bind ("M-p" . ace-window))
 
-;; disable auto fill mode
-(auto-fill-mode -1)
-(remove-hook 'text-mode-hook #'turn-on-auto-fill)
-
-;; we hate this crap
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
+;;
+;; rexx mode
+;;
+(use-package rexx-mode
+  :ensure f
+  :load-path "lisp/"
+  :mode ("\\.rexx$" . rexx-mode))
 
 ;;
 ;; Gradle/groovy support
