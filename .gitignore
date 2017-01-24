@@ -3,3 +3,6 @@ elpa
 backups
 places
 auto-save-list
+abbrev_defs
+ido.last
+tramp
