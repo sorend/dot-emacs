@@ -6,15 +6,16 @@
 (toggle-frame-maximized)
 (setq use-package-always-ensure t)
 
+;; initialize package setup
 (require 'package)
 (setq package-enable-at-startup nil)
 (add-to-list 'package-archives
-       '("melpa" . "http://melpa.org/packages/") t)
-
+             '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
 (when (not package-archive-contents)
   (package-refresh-contents))
 
+;; need use-package if we don't have it already
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
@@ -193,14 +194,17 @@
 ;; we hate this crap
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
+;; needed for groovy mode
+(use-package cl)
+
 ;;
 ;; Gradle/groovy support
 ;;
 (use-package groovy-mode
-  :ensure t
   :mode      ("\\.\\(groovy\\|gradle\\)$" . groovy-mode)
   :config
-  (require 'cl))
+  (require 'groovy-electric)
+  (add-hook 'after-init-hook '(lambda() (groovy-electric-mode))))
 
 ;;
 ;; markdown
@@ -212,6 +216,22 @@
   :init (setq markdown-command "multimarkdown")
   :config
   (use-package markdown-preview-mode))
+
+;;
+;; yaml
+;;
+(use-package yaml-mode
+  :mode (("\\.yml\\'" . yaml-mode)
+         ("\\.yaml\\'" . yaml-mode)))
+
+;;
+;; Multiple cursors
+;;
+(use-package multiple-cursors
+  :bind (("s-SPC" . mc/edit-lines)
+         ("s-k" . mc/mark-next-like-this)
+         ("s-j" . mc/mark-previous-like-this)
+         ("s-S-k" . mc/mark-all-like-this)))
 
 ;;
 ;; GIT CONFIG
