@@ -4,9 +4,17 @@
 ;; ----------------------
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp"))
 
-(setq url-proxy-services '(("no_proxy" . "127.0.0.1")
-                           ("http" . "127.0.0.1:3128")
-			   ("https" . "127.0.0.1:3128")))
+;; at work (windows)
+(when (eq system-type 'windows-nt)
+  (setq url-proxy-services '(("no_proxy" . "127.0.0.1")
+                             ("http" . "127.0.0.1:3128")
+                             ("https" . "127.0.0.1:3128")))
+  )
+;; at home (linux)
+(when (eq system-type 'gnu/linux) ;; for home
+  (set-face-attribute 'default nil :height 165)
+  )
+
 
 (toggle-frame-maximized)
 (setq use-package-always-ensure t)
@@ -36,6 +44,7 @@
 (use-package material-theme
   :config
   (load-theme 'material t))
+
 
 ;;
 ;; BASIC CONFIG
