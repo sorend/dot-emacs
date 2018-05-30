@@ -17,7 +17,6 @@
 
 
 (toggle-frame-maximized)
-(setq use-package-always-ensure t)
 
 ;; initialize package setup
 (require 'package)
@@ -32,6 +31,8 @@
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
+(require 'use-package)
+(setq use-package-always-ensure t)
 
 (use-package better-defaults
   :config
@@ -41,9 +42,9 @@
   (setq auto-save-file-name-transforms
         `((".*" ,temporary-file-directory t))))
 
-(use-package material-theme
+(use-package solarized-theme
   :config
-  (load-theme 'material t))
+  (load-theme 'solarized-light t))
 
 
 ;;
@@ -280,5 +281,8 @@
   :bind ("C-x h" . monky-status)
   :config
   (setq monky-process-type 'cmdserver))
+
+(use-package dockerfile-mode
+  :mode (("Dockerfile'" . dockerfile-mode)))
 
 ;; init.el ends here
