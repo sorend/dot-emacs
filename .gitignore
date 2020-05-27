@@ -1,3 +1,5 @@
+transient
+forge-database.sqlite
 snippets
 elpa
 backups

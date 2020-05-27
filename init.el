@@ -5,11 +5,11 @@
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp"))
 
 ;; at work (windows)
-(when (eq system-type 'windows-nt)
-  (setq url-proxy-services '(("no_proxy" . "127.0.0.1")
-                             ("http" . "127.0.0.1:3128")
-                             ("https" . "127.0.0.1:3128")))
-  )
+;; (when (eq system-type 'windows-nt)
+;;   (setq url-proxy-services '(("no_proxy" . "127.0.0.1")
+;;                              ("http" . "127.0.0.1:3128")
+;;                              ("https" . "127.0.0.1:3128")))
+;;   )
 ;; at home (linux)
 (when (eq system-type 'gnu/linux) ;; for home
   (set-face-attribute 'default nil :height 165)
@@ -21,8 +21,7 @@
 ;; initialize package setup
 (require 'package)
 (setq package-enable-at-startup nil)
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
 (when (not package-archive-contents)
   (package-refresh-contents))
@@ -42,9 +41,13 @@
   (setq auto-save-file-name-transforms
         `((".*" ,temporary-file-directory t))))
 
-(use-package solarized-theme
+(use-package monokai-theme
   :config
-  (load-theme 'solarized-light t))
+  (load-theme 'monokai t))
+
+;;(use-package solarized-theme
+;;  :config
+;;  (load-theme 'solarized-light t))
 
 
 ;;
@@ -62,15 +65,20 @@
 ;; we hate this crap
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
+;;
+
 (use-package flycheck)
 
 ;;
 ;; PYTHON CONFIG
 ;; -------------
 (use-package elpy
+  :ensure t
   :init (with-eval-after-load 'python (elpy-enable))
   :config
   ;; use flycheck instead of flymake
+  (setq python-shell-interpreter "ipython"
+        python-shell-interpreter-args "-i --simple-prompt")
   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
   (add-hook 'elpy-mode-hook 'flycheck-mode)
   (use-package py-autopep8
@@ -81,7 +89,6 @@
     :commands pyenv-mode)
   (use-package pyenv-mode-auto)
   :bind ("RET" . newline-and-indent))
-
 
 ;;
 ;; JAVASCRIPT CONFIG
@@ -274,15 +281,67 @@
 (use-package magit-find-file
              :bind ("C-c p" . magit-find-file-completing-read))
 
-;;
-;; Mercurial config
-;;
-(use-package monky
-  :bind ("C-x h" . monky-status)
-  :config
-  (setq monky-process-type 'cmdserver))
+(use-package forge
+  :after magit)
 
+;;
+;; Dockerfile support
+;; ------
 (use-package dockerfile-mode
   :mode (("Dockerfile'" . dockerfile-mode)))
 
+;;
+;; Racket support
+;;
+(use-package racket-mode
+  :mode      ("\\.\\(rkt\\|scm\\)$" . racket-mode))
+
+;;
+;; Haskell mode
+;;
+(use-package haskell-mode
+  :mode      ("\\.\\(hs\\)$" . haskell-mode)
+  :init
+  ;(progn
+  ;  (use-package intero)
+                                        ;  (add-hook 'haskell-mode-hook 'intero-mode)))
+  )
+
+;; add company-tabnine
+(use-package company-tabnine
+  :ensure t
+  :config
+  (add-to-list 'company-backends #'company-tabnine)
+  ;; trigger completion immediately
+  (setq company-idle-delay 0)
+  ;; Number the candidates (use M-1, M-2 etc to select completions).
+  (setq company-show-numbers t)
+  (company-tabnine-install-binary))
+
+;;
+;; Prolog mode
+;;
+;; (use-package prolog-mode
+;;   :mode      ("\\.\\(pro\\)$" . prolog-mode)
+;;   :init
+;;   (progn
+;;     (use-package ediprolog)
+;;     (local-set-key [f10] 'ediprolog-dwim)
+;;   ))
+
+
 ;; init.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (intero flymake-racket flylisp markdown-preview-mode dockerfile-mode monky magit-find-file magit yaml-mode markdown-mode groovy-mode ace-window auctex mmm-mode css-eldoc rainbow-mode web-mode json-mode skewer-mode js2-refactor js2-mode pyenv-mode-auto pyenv-mode py-autopep8 elpy flycheck solarized-theme better-defaults use-package))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
