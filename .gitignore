@@ -1,11 +1,3 @@
-transient
-forge-database.sqlite
-snippets
-elpa
-backups
-places
-auto-save-list
-abbrev_defs
-ido.last
-tramp
-session.*
+*
+!README.md
+!init.el
