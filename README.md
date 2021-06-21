@@ -7,4 +7,3 @@ Clone the repository as $HOME/.emacs.d/
 
 No fancy stuff :-)
 
-

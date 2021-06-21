@@ -1,75 +1,61 @@
 ;; init.el --- Emacs configuration
 
-;; at work (windows)
-;; (when (eq system-type 'windows-nt)
-;;   (setq url-proxy-services '(("no_proxy" . "127.0.0.1")
-;;                              ("http" . "127.0.0.1:3128")
-;;                              ("https" . "127.0.0.1:3128")))
-;;   )
-;; at home (linux)
-(when (eq system-type 'gnu/linux) ;; for home
-  (set-face-attribute 'default nil :height 165)
-  )
+(when (string-equal system-name "rebala") ;; for laptop
+  (set-face-attribute 'default nil :height 165))
 
 (toggle-frame-maximized)
 (setq inhibit-splash-screen t)
 (setq inhibit-startup-message t)
 
-(setq gc-cons-threshold 100000000) ;; fix for lsp
+(setq gc-cons-threshold (* 256 1024 1024))
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
 ;; initialize package setup
 (require 'package)
-;; (setq package-enable-at-startup nil)
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/") t)
+(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+                         ("melpa" . "https://melpa.org/packages/")
+                         ("melpa-stable" . "https://stable.melpa.org/packages/")))
 (package-initialize)
-;; (package-refresh-contents) ;; this is done by the auto-update
-
-;;(when (not package-archive-contents)
-;; (package-refresh-contents))
-
 
 ;; need use-package if we don't have it already
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-(setq use-package-always-ensure t
-      use-package-always-defer nil
-      use-package-verbose t
-      use-package-minimum-reported-time 0.0001)
+
+(use-package use-package
+  :config
+  (setq use-package-always-ensure t
+        use-package-always-demand t
+        use-package-always-defer nil
+        use-package-verbose t
+        use-package-minimum-reported-time 0.0001))
 
 (when (window-system)
   (menu-bar-mode -1)
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
-  (setq-default fram-title-format '("Emacs " emacs-version))
-  (use-package pdf-tools
-    :ensure
-    :config
-    (pdf-tools-install)))
+  (setq-default fram-title-format '("Emacs " emacs-version)))
 
-;;
-;; BASIC CONFIG
-;; ------------
 (windmove-default-keybindings)
-(setq inhibit-startup-message t) ;; hide the startup message
-;; (load-theme 'material t) ;; load material theme
 (global-hl-line-mode)
+(auto-fill-mode -1)
 
+(setq inhibit-startup-message t)
 (setq-default c-basic-offset 4
               indent-tabs-mode nil
-              tab-width 4)
+              tab-width 4
+              display-time-24hr-format t)
 
-;; we hate this crap
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
-(setq display-time-24hr-format t)
-(windmove-default-keybindings)
-(global-hl-line-mode)
-
-;; disable auto fill mode
-(auto-fill-mode -1)
 (remove-hook 'text-mode-hook #'turn-on-auto-fill)
+
+(use-package pdf-tools
+    :config
+    (pdf-loader-install))
+
+(use-package beacon
+  :config
+  (beacon-mode 1))
 
 (use-package dash)
 
@@ -82,47 +68,40 @@
         `((".*" ,temporary-file-directory t))))
 
 (use-package monokai-theme
-  :ensure t
   :defer nil
   :config
   (load-theme 'monokai t))
 
-(use-package bs
-  :ensure)
+(use-package bs)
 (use-package ibuffer
-  :ensure
   :config
   (defalias 'list-buffers 'ibuffer))
 
 (use-package company
-  :ensure
   :config
   (setq company-idle-delay 0)
   (setq company-minimum-prefix-length 1)
   (add-to-list 'company-backends 'company-ansible)
   (add-hook 'after-init-hook 'global-company-mode))
 
-(use-package crontab-mode
-  :ensure)
+(use-package crontab-mode)
 
 ;; refresh whee
 (global-set-key (kbd "<f5>") 'revert-buffer)
 
 (use-package selectrum
-  :ensure t)
-(selectrum-mode +1)
+  :config
+  (selectrum-mode +1))
 
-(use-package consult :ensure t)
+(use-package consult)
 
 (use-package counsel
-  :ensure t
   :bind
   (("M-y" . counsel-yank-pop)
    :map ivy-minibuffer-map
    ("M-y" . ivy-next-line)))
 
 (use-package ivy
-  :ensure t
   :diminish (ivy-mode)
   :bind (("C-x b" . ivy-switch-buffer))
   :config
@@ -133,39 +112,35 @@
 
 ;; search improvement
 (use-package ctrlf
-  :ensure t)
-(ctrlf-mode +1)
+  :config
+  (ctrlf-mode +1))
 
 (use-package bufler
-  :ensure t)
-(defun sad/bufler-one-window (&optional force-refresh)
-  (interactive "P")
-  (bufler-list)
-  (delete-other-windows))
-(global-set-key (kbd "C-x C-b") 'sad/bufler-one-window)
+  :config
+  (defun sorend/bufler-one-window (&optional force-refresh)
+    (interactive "P")
+    (bufler-list)
+    (delete-other-windows))
+  (global-set-key (kbd "C-x C-b") 'sorend/bufler-one-window))
 
 (use-package helm
-  :ensure t
   :bind (("M-x" . helm-M-x)
          ("C-x b" . helm-mini)
          ("C-c x" . helm-all-mark-rings)))
 
 (use-package rainbow-delimiters
-  :ensure t
-  :hook (prog-mode . rainbow-delimiters-mode))
+  :hook
+  (prog-mode . rainbow-delimiters-mode))
 
-(use-package projectile
-  :ensure t)
+(use-package projectile)
 
 (use-package helm-projectile
-  :ensure t
   :hook projectile-mode
   :config
   (setq projectile-completion-system 'helm)
   (helm-projectile-on))
 
 (use-package auto-package-update
-  :ensure t
   :config
   (auto-package-update-at-time "02:00"))
 
@@ -240,8 +215,7 @@
 ;;
 ;; clojure
 ;;
-(use-package cider
-  :ensure t)
+(use-package cider)
 
 
 ;;
@@ -262,12 +236,6 @@
         TeX-PDF-mode t)
   (setq-default TeX-master nil))
 
-;; (use-package preview
-;;   :commands LaTeX-preview-setup
-;;   :init
-;;   (progn
-;;     (setq-default preview-scale 1.4
-;; 		  preview-scale-function '(lambda () (* (/ 10.0 (preview-document-pt)) preview-scale)))))
 
 (use-package reftex
   :commands turn-on-reftex
@@ -282,27 +250,19 @@
     (setq bibtex-align-at-equal-sign t)
     (add-hook 'bibtex-mode-hook (lambda () (set-fill-column 120)))))
 
-;;(defvar myPackages
-;;  '(ein
-;;    elpy
-;;    flycheck
-;;    material-theme
-;;    py-autopep8
-;;    pyenv-mode
-;;    pyenv-mode-auto))
 
 ;; setup tramp
 (use-package tramp
   :defer t
   :config
-  (setq tramp-default-method "ssh")
-  (setq tramp-auto-save-directory "~/.emacs.d/tramp-autosave-dir")
-  (setq password-cache-expiry 3600)
-  (setq recentf-keep '(file-remote-p file-readable-p)))
+  (setq tramp-default-method "ssh"
+        tramp-auto-save-directory "~/.emacs.d/tramp-autosave-dir"
+        password-cache-expiry 3600
+        recentf-keep '(file-remote-p file-readable-p)))
 
 ;; setup ace-window
 (use-package ace-window
-             :bind ("M-p" . ace-window))
+  :bind ("M-p" . ace-window))
 
 ;; needed for groovy mode
 (use-package cl-lib)
@@ -331,33 +291,34 @@
 ;;
 ;; yaml
 ;;
-(use-package yaml-mode
-  :mode (("\\.yml\\'" . yaml-mode)
-         ("\\.yaml\\'" . yaml-mode)))
+(use-package yaml-mode)
+;  :mode (("\\.yml\\'" . yaml-mode)
+;         ("\\.yaml\\'" . yaml-mode)))
 
 ;;
 ;; Multiple cursors
 ;;
 (use-package multiple-cursors
-  :bind (("s-SPC" . mc/edit-lines)
-         ("s-k" . mc/mark-next-like-this)
-         ("s-j" . mc/mark-previous-like-this)
-         ("s-S-k" . mc/mark-all-like-this)))
+  :bind
+  (("s-SPC" . mc/edit-lines)
+   ("s-k" . mc/mark-next-like-this)
+   ("s-j" . mc/mark-previous-like-this)
+   ("s-S-k" . mc/mark-all-like-this)))
 
 ;;
 ;; GIT CONFIG
 ;; ----------
 (use-package magit
-             :bind ("C-x g" . magit-status)
-             :config
-             ;; disable auto-revert-mode (a bit faster w/o)
-             (magit-auto-revert-mode 0)
-             ;; display the magit in a full screen buffer
-             (setq magit-display-buffer-function
-                   'magit-display-buffer-fullframe-status-v1))
+  :bind ("C-x g" . magit-status)
+  :config
+  ;; disable auto-revert-mode (a bit faster w/o)
+  (magit-auto-revert-mode 0)
+  ;; display the magit in a full screen buffer
+  (setq magit-display-buffer-function
+        'magit-display-buffer-fullframe-status-v1))
 
 (use-package magit-find-file
-             :bind ("C-c p" . magit-find-file-completing-read))
+  :bind ("C-c p" . magit-find-file-completing-read))
 
 ;;
 ;; Dockerfile support
@@ -376,15 +337,10 @@
 ;;   (setq company-show-numbers t)
 ;;   (company-tabnine-install-binary))
 
-(use-package exec-path-from-shell
-  :config
-  (dolist (shell-variable '("SSH_AUTH_SOCK"
-                            "SSH_AGENT_PID"))
-    (add-to-list 'exec-path-from-shell-variables shell-variable))
-  (exec-path-from-shell-initialize))
+(use-package emojify
+  :hook (after-init . global-emojify-mode))
 
 (use-package exec-path-from-shell
-  :demand t
   :config
   (dolist (shell-variable '("SSH_AUTH_SOCK"
                             "SSH_AGENT_PID"
@@ -417,7 +373,6 @@
 ;; lsp mode
 ;;
 (use-package lsp-mode
-  :ensure t
   :config
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
   (setq lsp-keymap-prefix "C-c l"
@@ -433,7 +388,6 @@
 
 ;; optionally
 (use-package lsp-ui
-  :ensure
   :commands lsp-ui-mode)
 ;; if you are helm user
 ;; (use-package helm-lsp :commands helm-lsp-workspace-symbol)
@@ -442,7 +396,6 @@
   :commands lsp-ivy-workspace-symbol)
 
 (use-package lsp-treemacs
-  :ensure t
   :commands
   lsp-treemacs-errors-list)
 
@@ -456,7 +409,6 @@
     (which-key-mode))
 
 (use-package python-mode
-  :ensure t
   :after (lsp-mode)
   :hook ((python-mode . lsp-deferred)
          (before-save . lsp-format-buffer)
@@ -465,11 +417,9 @@
   ;; keybindings
   (add-to-list 'lsp-enabled-clients 'pyls))
 
-(use-package pyenv-mode
-  :ensure t)
+(use-package pyenv-mode)
 
-(use-package pyenv-mode-auto
-  :ensure t)
+(use-package pyenv-mode-auto)
 
 ;; java
 (use-package lsp-java
@@ -483,45 +433,6 @@
 
 (use-package dap-java
   :ensure nil)
-
-;; (use-package pyvenv
-;;  :ensure t
-;;  :init
-;;  (setenv "WORKON_HOME" "~/.pyenv/versions"))
-
-
-;;
-;; python virtualenv setup helpers
-;;
-;; (defun sorend/py-workon-project-venv ()
-;;   "Call pyenv-workon with the current projectile project name.
-;; This will return the full path of the associated virtual
-;; environment found in $WORKON_HOME, or nil if the environment does
-;; not exist."
-;;   (let ((pname (projectile-project-name)))
-;;     (pyvenv-workon pname)
-;;     (if (file-directory-p pyvenv-virtual-env)
-;;         pyvenv-virtual-env
-;;       (pyvenv-deactivate))))
-
-;; (defun sorend/py-auto-lsp ()
-;;   "Turn on lsp mode in a Python project with some automated logic.
-;; Try to automatically determine which pyenv virtual environment to
-;; activate based on the project name, using
-;; `dd/py-workon-project-venv'. If successful, call `lsp'. If we
-;; cannot determine the virtualenv automatically, first call the
-;; interactive `pyvenv-workon' function before `lsp'"
-;;   (interactive)
-;;   (let ((pvenv (sorend/py-workon-project-venv)))
-;;     (if pvenv
-;;         (lsp)
-;;       (progn
-;;         (call-interactively #'pyvenv-workon)
-;;         (lsp)))))
-
-;; (bind-key (kbd "C-c C-a") #'sorend/py-auto-lsp python-mode-map)
-
-
 
 
 ;;
