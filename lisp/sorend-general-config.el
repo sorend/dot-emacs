@@ -23,10 +23,6 @@
 ;; refresh whee
 (global-set-key (kbd "<f5>") 'revert-buffer)
 
-(use-package pdf-tools
-    :config
-    (pdf-loader-install))
-
 (use-package beacon
   :config
   (beacon-mode 1))
@@ -52,11 +48,22 @@
   (defalias 'list-buffers 'ibuffer))
 
 (use-package company
+  :after lsp-mode
+  :hook
+  ((prog-mode . company-mode))
+  :bind
+  (:map company-active-map
+        ("<tab>" . company-complete-selection)
+   :map lsp-mode-map
+        ("<tab>" . company-indent-or-complete-common))
   :config
   (setq company-idle-delay 0)
   (setq company-minimum-prefix-length 1)
   (add-to-list 'company-backends 'company-ansible)
   (add-hook 'after-init-hook 'global-company-mode))
+
+(use-package company-box
+  :hook (company-mode . company-box-mode))
 
 (use-package crontab-mode)
 
@@ -137,11 +144,11 @@
 ;;
 (use-package multiple-cursors
   :bind
-  (("s-SPC" . mc/edit-lines)
-   ("s-k" . mc/mark-next-like-this)
-   ("s-j" . mc/mark-previous-like-this)
-   ("s-S-k" . mc/mark-all-like-this)))
-
+  (("C-c SPC" . mc/edit-lines)
+   ("C-c C-<down>" . mc/mark-next-like-this)
+   ("C-c C-<up>" . mc/mark-previous-like-this)
+   ("C-c C-<right>" . mc/mark-all-like-this)))
+ 
 
 ;;
 ;; GIT CONFIG

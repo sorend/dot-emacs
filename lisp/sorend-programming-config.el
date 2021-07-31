@@ -116,16 +116,34 @@
 
 (use-package python-mode
   :after (lsp-mode)
-  :hook ((python-mode . lsp-deferred)
-         (before-save . lsp-format-buffer)
-         (before-save . lsp-organize-imports))
+  :hook
+  ((python-mode . lsp-deferred)
+   (before-save . lsp-format-buffer)
+   (before-save . lsp-organize-imports))
   :config
   ;; keybindings
-  (add-to-list 'lsp-enabled-clients 'pyls))
+  (add-to-list 'lsp-enabled-clients 'pylsp))
 
 (use-package pyenv-mode)
 
 (use-package pyenv-mode-auto)
+
+(use-package python-pytest
+  :after python
+  :bind
+  (("C-c t" . python-pytest-dispatch))
+  :custom
+  (python-pytest-arguments
+   '("--color"          ;; colored output in the buffer
+     "--failed-first"   ;; run the previous failed tests first
+     "--maxfail=5"))    ;; exit in 5 continuous failures in a run
+  :config
+  ;; (which-key-declare-prefixes-for-mode 'python-mode "SPC pt" "Testing"))
+  )
+
+;;(use-package tox
+;;  :config
+;;  (setq tox-runner 'py.test))
 
 
 (provide 'sorend-programming-config)

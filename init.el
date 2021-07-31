@@ -30,6 +30,10 @@
         use-package-verbose t
         use-package-minimum-reported-time 0.0001))
 
+(use-package paradox
+  :config
+  (paradox-enable))
+
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 (require 'sorend-general-config)
 
