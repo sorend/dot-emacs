@@ -48,7 +48,8 @@
   (lsp-enable-which-key-integration t)
   :hook
   ((go-mode . lsp)
-   (python-mode . lsp))
+   (python-mode . lsp)
+   (LaTeX-mode . lsp))
   :commands (lsp lsp-deferred))
 
 ;; optionally
@@ -69,7 +70,6 @@
         lsp-ui-peek-peek-height 25)
   :hook
   ((lsp-mode . lsp-ui-mode)))
-  ;; (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
 ;; if you are helm user
 (use-package helm-lsp
@@ -94,8 +94,8 @@
 
 ;; lsp java
 (use-package lsp-java
-  :config
-  (add-hook 'java-mode-hook 'lsp))
+  :hook
+  ((java-mode . lsp)))
 
 (use-package dap-mode
   :after lsp-mode
@@ -106,12 +106,10 @@
   :ensure nil)
 
 
-(use-package lsp-latex
-  :after tex-site
-  :hook
-  ((tex-mode . lsp)
-   (latex-mode . lsp)
-   (bibtex-mode . lsp)))
+;;(use-package lsp-toml
+;;  :after lsp-mode
+;;  :config
+;;  (add-hook 'toml-mode-hook 'lsp'))
 
 
 (provide 'sorend-lsp-config)

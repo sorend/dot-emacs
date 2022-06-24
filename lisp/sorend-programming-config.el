@@ -65,7 +65,7 @@
 ;;
 ;; clojure
 ;;
-(use-package cider)
+;; (use-package cider)
 
 
 ;;
@@ -91,6 +91,9 @@
 
 ;; yaml
 (use-package yaml-mode)
+
+;; toml
+(use-package toml-mode)
 
 ;; Dockerfile support
 (use-package dockerfile-mode
