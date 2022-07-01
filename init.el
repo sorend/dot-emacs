@@ -691,9 +691,10 @@
 
     ;; Refresh mail using isync every 10 minutes
     (setq mu4e-update-interval (* 10 60)
-          mu4e-get-mail-command "mbsync -c ~/.emacs.d/mu4e/mbsync-gmail gmail"
+          mu4e-get-mail-command "mbsync -c ~/.emacs.d/mu4e/mbsync-gmail -a"
           ;; where to get attachments from
           mu4e-attachment-dir "~/Downloads"
+          mu4e-save-multiple-attachments-without-asking t
           ;; maildir
           mu4e-maildir "~/Mail"
           ;; hack for imap to behave
@@ -727,6 +728,23 @@
                        (mu4e-sent-folder . "/gmail/Sent Mail")
                        (mu4e-trash-folder . "/gmail/Trash")
                        (mu4e-drafts-folder . "/gmail/Drafts")
+                       (mu4e-refile-folder . "/gmail/All Mail")
+                       (mu4e-sent-messages-behavior . sent)
+                       ))
+             ,(make-mu4e-context
+               :name "Hamisoke"
+               :match-func (lambda (msg) (when msg
+                                           (string-prefix-p "/hamisoke" (mu4e-message-field msg :maildir))))
+               :vars '((user-full-name . "Soren A D")
+                       (user-mail-address . "soren@hamisoke.com")
+                       (smtpmail-smtp-server . "pixel.mxrouting.net")
+                       (smtpmail-smtp-user . "soren@hamisoke.com")
+                       (smtpmail-smtp-service . 465)
+                       (smtpmail-stream-type . ssl)
+                       (smtpmail-debug-info . t)
+                       (mu4e-sent-folder . "/hamisoke/Sent")
+                       (mu4e-trash-folder . "/hamisoke/Trash")
+                       (mu4e-drafts-folder . "/hamisoke/Drafts")
                        (mu4e-refile-folder . "/gmail/All Mail")
                        (mu4e-sent-messages-behavior . sent)
                        ))
@@ -779,11 +797,11 @@
     (add-to-list 'mu4e-bookmarks
                  (make-mu4e-bookmark
                   :name "All Inboxes"
-                  :query "maildir:/gmail/INBOX OR maildir:/Personal/INBOX"
+                  :query "maildir:/gmail/INBOX OR maildir:/Personal/INBOX OR maildir:/hamisoke/INBOX"
                   :key ?i))
 
     (setq dw/mu4e-inbox-query
-          "(maildir:/Personal/INBOX OR maildir:/gmail/INBOX) AND flag:unread")
+          "(maildir:/Personal/INBOX OR maildir:/gmail/INBOX OR maildir:/hamisoke/INBOX) AND flag:unread")
 
     (defun dw/go-to-inbox ()
       (interactive)
