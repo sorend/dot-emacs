@@ -1,3 +1,0 @@
-
-
-(provide 'sorend-general-config)
