@@ -641,10 +641,41 @@
   :bind
   (("C-x C-t" . vterm)))
 
+
+(use-package notmuch
+  :pin melpa-stable
+  :custom
+  (notmuch-saved-searches
+   (quote
+    ((:name "inbox" :query "tag:inbox" :key "i" :sort-order newest-first)
+     (:name "flagged" :query "tag:flagged" :key "f")
+     (:name "sent" :query "tag:sent" :key "t")
+     (:name "drafts" :query "tag:draft" :key "d")
+     (:name "all mail" :query "*" :key "a" :sort-order newest-first))))
+  (message-kill-buffer-on-exit t)
+  (mail-specify-envelope-from t)
+  (send-mail-function 'sendmail-send-it)
+  (message-sendmail-f-is-evil t)
+  (mail-envelope-from 'header)
+  (message-sendmail-envelope-from 'header)
+  :config
+  (global-set-key (kbd "C-c m") `notmuch)
+  :bind
+  (:map notmuch-show-mode-map
+        ("S" . (lambda () "mark message as spam"
+                 (interactive)
+                 (notmuch-show-tag (list "+spam" "-inbox")))))
+  (:map notmuch-search-mode-map
+        ("S" . (lambda () "mark message as spam"
+                 (interactive)
+                 (notmuch-search-tag (list "+spam" "-inbox")))))
+  )
+
 ;;
 ;; epub
 ;;
-(use-package nov)
+;; (use-package nov)
+
 ;; (use-package nov-xwidget
 ;;   :demand t
 ;;   :after nov
@@ -683,147 +714,164 @@
 ;;
 ;; mu4e configuration (currently not used)
 ;;
-(use-package mu4e
-  :defer 20 ; Wait until 20 seconds after startup
-  :load-path "/snap/maildir-utils/current/share/emacs/site-lisp/mu4e"
-  :config
-    (require 'org-mu4e)
+;; (use-package mu4e
+;;   :defer 20 ; Wait until 20 seconds after startup
+;;   :load-path "/snap/maildir-utils/current/share/emacs/site-lisp/mu4e"
+;;   :config
+;;     (require 'org-mu4e)
 
-    ;; Refresh mail using isync every 10 minutes
-    (setq mu4e-update-interval (* 10 60)
-          mu4e-get-mail-command "mbsync -c ~/.emacs.d/mu4e/mbsync-gmail -a"
-          ;; where to get attachments from
-          mu4e-attachment-dir "~/Downloads"
-          mu4e-save-multiple-attachments-without-asking t
-          ;; maildir
-          mu4e-maildir "~/Mail"
-          ;; hack for imap to behave
-          mu4e-change-filenames-when-moving t
-          ;; how to chose context
-          mu4e-context-policy 'pick-first
-          ;; Display options
-          mu4e-view-show-images t
-          mu4e-view-show-addresses 't
-          ;; Composing mail
-          mu4e-compose-dont-reply-to-self t
-          ;; Use mu4e for sending e-mail
-          mail-user-agent 'mu4e-user-agent
-          message-send-mail-function 'smtpmail-send-it
-          ;; don't keep message buffers around
-          message-kill-buffer-on-exit t)
+;;     ;; Refresh mail using isync every 10 minutes
+;;     (setq mu4e-update-interval (* 10 60)
+;;           mu4e-get-mail-command "mbsync -c ~/.emacs.d/mu4e/mbsync-gmail -a"
+;;           ;; where to get attachments from
+;;           mu4e-attachment-dir "~/Downloads"
+;;           mu4e-save-multiple-attachments-without-asking t
+;;           ;; maildir
+;;           mu4e-maildir "~/Mail"
+;;           ;; hack for imap to behave
+;;           mu4e-change-filenames-when-moving t
+;;           ;; how to chose context
+;;           mu4e-context-policy 'pick-first
+;;           ;; Display options
+;;           mu4e-view-show-images t
+;;           mu4e-view-show-addresses 't
+;;           ;; Composing mail
+;;           mu4e-compose-dont-reply-to-self t
+;;           ;; Use mu4e for sending e-mail
+;;           mail-user-agent 'mu4e-user-agent
+;;           message-send-mail-function 'smtpmail-send-it
+;;           ;; don't keep message buffers around
+;;           message-kill-buffer-on-exit t)
 
-    ;; Set up contexts for email accounts
-    (setq mu4e-contexts
-          `( ,(make-mu4e-context
-               :name "Gmail"
-               :match-func (lambda (msg) (when msg
-                                           (string-prefix-p "/gmail" (mu4e-message-field msg :maildir))))
-               :vars '((user-full-name . "Soren A D")
-                       (user-mail-address . "sorend@gmail.com")
-                       (smtpmail-smtp-server . "smtp.gmail.com")
-                       (smtpmail-smtp-user . "sorend@gmail.com")
-                       (smtpmail-smtp-service . 465)
-                       (smtpmail-stream-type . ssl)
-                       (smtpmail-debug-info . t)
-                       (mu4e-sent-folder . "/gmail/Sent Mail")
-                       (mu4e-trash-folder . "/gmail/Trash")
-                       (mu4e-drafts-folder . "/gmail/Drafts")
-                       (mu4e-refile-folder . "/gmail/All Mail")
-                       (mu4e-sent-messages-behavior . sent)
-                       ))
-             ,(make-mu4e-context
-               :name "Hamisoke"
-               :match-func (lambda (msg) (when msg
-                                           (string-prefix-p "/hamisoke" (mu4e-message-field msg :maildir))))
-               :vars '((user-full-name . "Soren A D")
-                       (user-mail-address . "soren@hamisoke.com")
-                       (smtpmail-smtp-server . "pixel.mxrouting.net")
-                       (smtpmail-smtp-user . "soren@hamisoke.com")
-                       (smtpmail-smtp-service . 465)
-                       (smtpmail-stream-type . ssl)
-                       (smtpmail-debug-info . t)
-                       (mu4e-sent-folder . "/hamisoke/Sent")
-                       (mu4e-trash-folder . "/hamisoke/Trash")
-                       (mu4e-drafts-folder . "/hamisoke/Drafts")
-                       (mu4e-refile-folder . "/gmail/All Mail")
-                       (mu4e-sent-messages-behavior . sent)
-                       ))
-             ,(make-mu4e-context
-               :name "Personal"
-               :match-func (lambda (msg) (when msg
-                                           (string-prefix-p "/Personal" (mu4e-message-field msg :maildir))))
-               :vars '(
-                       (mu4e-sent-folder . "/Personal/Sent")
-                       (mu4e-trash-folder . "/Personal/Deleted")
-                       (mu4e-refile-folder . "/Personal/Archive")
-                       ))
-             ))
+;;     ;; Set up contexts for email accounts
+;;     (setq mu4e-contexts
+;;           `( ,(make-mu4e-context
+;;                :name "Gmail"
+;;                :match-func (lambda (msg) (when msg
+;;                                            (string-prefix-p "/gmail" (mu4e-message-field msg :maildir))))
+;;                :vars '((user-full-name . "Soren A D")
+;;                        (user-mail-address . "sorend@gmail.com")
+;;                        (smtpmail-smtp-server . "smtp.gmail.com")
+;;                        (smtpmail-smtp-user . "sorend@gmail.com")
+;;                        (smtpmail-smtp-service . 465)
+;;                        (smtpmail-stream-type . ssl)
+;;                        (smtpmail-debug-info . t)
+;;                        (mu4e-sent-folder . "/gmail/Sent Mail")
+;;                        (mu4e-trash-folder . "/gmail/Trash")
+;;                        (mu4e-drafts-folder . "/gmail/Drafts")
+;;                        (mu4e-refile-folder . "/gmail/All Mail")
+;;                        (mu4e-sent-messages-behavior . sent)
+;;                        ))
+;;              ,(make-mu4e-context
+;;                :name "Hamisoke"
+;;                :match-func (lambda (msg) (when msg
+;;                                            (string-prefix-p "/hamisoke" (mu4e-message-field msg :maildir))))
+;;                :vars '((user-full-name . "Soren A D")
+;;                        (user-mail-address . "soren@hamisoke.com")
+;;                        (smtpmail-smtp-server . "pixel.mxrouting.net")
+;;                        (smtpmail-smtp-user . "soren@hamisoke.com")
+;;                        (smtpmail-smtp-service . 465)
+;;                        (smtpmail-stream-type . ssl)
+;;                        (smtpmail-debug-info . t)
+;;                        (mu4e-sent-folder . "/hamisoke/Sent")
+;;                        (mu4e-trash-folder . "/hamisoke/Trash")
+;;                        (mu4e-drafts-folder . "/hamisoke/Drafts")
+;;                        (mu4e-refile-folder . "/gmail/All Mail")
+;;                        (mu4e-sent-messages-behavior . sent)
+;;                        ))
+;;              ,(make-mu4e-context
+;;                :name "SVU"
+;;                :match-func (lambda (msg) (when msg
+;;                                            (string-prefix-p "/svu" (mu4e-message-field msg :maildir))))
+;;                :vars '((user-full-name . "Soren A D")
+;;                        (user-mail-address . "sorend@cs.svu-ac.in")
+;;                        (smtpmail-smtp-server . "pixel.mxrouting.net")
+;;                        (smtpmail-smtp-user . "sorend@cs.svu-ac.in")
+;;                        (smtpmail-smtp-service . 465)
+;;                        (smtpmail-stream-type . ssl)
+;;                        (smtpmail-debug-info . t)
+;;                        (mu4e-sent-folder . "/svu/Sent")
+;;                        (mu4e-trash-folder . "/svu/Trash")
+;;                        (mu4e-drafts-folder . "/svu/Drafts")
+;;                        (mu4e-refile-folder . "/gmail/All Mail")
+;;                        (mu4e-sent-messages-behavior . sent)
+;;                        ))
+;;              ,(make-mu4e-context
+;;                :name "Personal"
+;;                :match-func (lambda (msg) (when msg
+;;                                            (string-prefix-p "/Personal" (mu4e-message-field msg :maildir))))
+;;                :vars '(
+;;                        (mu4e-sent-folder . "/Personal/Sent")
+;;                        (mu4e-trash-folder . "/Personal/Deleted")
+;;                        (mu4e-refile-folder . "/Personal/Archive")
+;;                        ))
+;;              ))
 
-    ;; Prevent mu4e from permanently deleting trashed items
-    ;; This snippet was taken from the following article:
-    ;; http://cachestocaches.com/2017/3/complete-guide-email-emacs-using-mu-and-/
-    (defun remove-nth-element (nth list)
-      (if (zerop nth) (cdr list)
-        (let ((last (nthcdr (1- nth) list)))
-          (setcdr last (cddr last))
-          list)))
-    (setq mu4e-marks (remove-nth-element 5 mu4e-marks))
-    (add-to-list 'mu4e-marks
-                 '(trash
-                   :char ("d" . "▼")
-                   :prompt "dtrash"
-                   :dyn-target (lambda (target msg) (mu4e-get-trash-folder msg))
-                   :action (lambda (docid msg target)
-                             (mu4e~proc-move docid
-                                             (mu4e~mark-check-target target) "-N"))))
+;;     ;; Prevent mu4e from permanently deleting trashed items
+;;     ;; This snippet was taken from the following article:
+;;     ;; http://cachestocaches.com/2017/3/complete-guide-email-emacs-using-mu-and-/
+;;     (defun remove-nth-element (nth list)
+;;       (if (zerop nth) (cdr list)
+;;         (let ((last (nthcdr (1- nth) list)))
+;;           (setcdr last (cddr last))
+;;           list)))
+;;     (setq mu4e-marks (remove-nth-element 5 mu4e-marks))
+;;     (add-to-list 'mu4e-marks
+;;                  '(trash
+;;                    :char ("d" . "▼")
+;;                    :prompt "dtrash"
+;;                    :dyn-target (lambda (target msg) (mu4e-get-trash-folder msg))
+;;                    :action (lambda (docid msg target)
+;;                              (mu4e~proc-move docid
+;;                                              (mu4e~mark-check-target target) "-N"))))
 
-    ;; Signing messages (use mml-secure-sign-pgpmime)
-    ;; (setq mml-secure-openpgp-signers '("53C41E6E41AAFE55335ACA5E446A2ED4D940BF14"))
+;;     ;; Signing messages (use mml-secure-sign-pgpmime)
+;;     ;; (setq mml-secure-openpgp-signers '("53C41E6E41AAFE55335ACA5E446A2ED4D940BF14"))
 
-    ;; (See the documentation for `mu4e-sent-messages-behavior' if you have
-    ;; additional non-Gmail addresses and want assign them different
-    ;; behavior.)
+;;     ;; (See the documentation for `mu4e-sent-messages-behavior' if you have
+;;     ;; additional non-Gmail addresses and want assign them different
+;;     ;; behavior.)
 
-    ;; setup some handy shortcuts
-    ;; you can quickly switch to your Inbox -- press ``ji''
-    ;; then, when you want archive some messages, move them to
-    ;; the 'All Mail' folder by pressing ``ma''.
-    (setq mu4e-maildir-shortcuts
-          '(("/gmail/INBOX"       . ?i)
-            ("/gmail/Sent Mail"   . ?s)
-            ("/gmail/All Mail"   . ?a)
-            ("/gmail/Trash"       . ?t)))
+;;     ;; setup some handy shortcuts
+;;     ;; you can quickly switch to your Inbox -- press ``ji''
+;;     ;; then, when you want archive some messages, move them to
+;;     ;; the 'All Mail' folder by pressing ``ma''.
+;;     (setq mu4e-maildir-shortcuts
+;;           '(("/gmail/INBOX"       . ?i)
+;;             ("/gmail/Sent Mail"   . ?s)
+;;             ("/gmail/All Mail"   . ?a)
+;;             ("/gmail/Trash"       . ?t)))
 
-    (add-to-list 'mu4e-bookmarks
-                 (make-mu4e-bookmark
-                  :name "All Inboxes"
-                  :query "maildir:/gmail/INBOX OR maildir:/Personal/INBOX OR maildir:/hamisoke/INBOX"
-                  :key ?i))
+;;     (add-to-list 'mu4e-bookmarks
+;;                  (make-mu4e-bookmark
+;;                   :name "All Inboxes"
+;;                   :query "maildir:/gmail/INBOX OR maildir:/Personal/INBOX OR maildir:/hamisoke/INBOX OR maildir:/svu/INBOX"
+;;                   :key ?i))
 
-    (setq dw/mu4e-inbox-query
-          "(maildir:/Personal/INBOX OR maildir:/gmail/INBOX OR maildir:/hamisoke/INBOX) AND flag:unread")
+;;     (setq dw/mu4e-inbox-query
+;;           "(maildir:/Personal/INBOX OR maildir:/gmail/INBOX OR maildir:/hamisoke/INBOX OR maildir:/svu/INBOX) AND flag:unread")
 
-    (defun dw/go-to-inbox ()
-      (interactive)
-      (mu4e-headers-search dw/mu4e-inbox-query))
+;;     (defun dw/go-to-inbox ()
+;;       (interactive)
+;;       (mu4e-headers-search dw/mu4e-inbox-query))
 
-    ;; (dw/leader-key-def
-    ;;  "m"  '(:ignore t :which-key "mail")
-    ;;  "mm" 'mu4e
-    ;;  "mc" 'mu4e-compose-new
-    ;;  "mi" 'dw/go-to-inbox
-    ;;  "ms" 'mu4e-update-mail-and-index)
+;;     ;; (dw/leader-key-def
+;;     ;;  "m"  '(:ignore t :which-key "mail")
+;;     ;;  "mm" 'mu4e
+;;     ;;  "mc" 'mu4e-compose-new
+;;     ;;  "mi" 'dw/go-to-inbox
+;;     ;;  "ms" 'mu4e-update-mail-and-index)
 
-    ;; Start mu4e in the background so that it syncs mail periodically
-    (mu4e t))
+;;     ;; Start mu4e in the background so that it syncs mail periodically
+;;     (mu4e t))
 
-(use-package mu4e-alert
-  :after mu4e
-  :config
-  ;; Show unread emails from all inboxes
-  (setq mu4e-alert-interesting-mail-query dw/mu4e-inbox-query)
-  ;; Show notifications for mails already notified
-  (setq mu4e-alert-notify-repeated-mails nil)
-  (mu4e-alert-enable-notifications))
+;; (use-package mu4e-alert
+;;   :after mu4e
+;;   :config
+;;   ;; Show unread emails from all inboxes
+;;   (setq mu4e-alert-interesting-mail-query dw/mu4e-inbox-query)
+;;   ;; Show notifications for mails already notified
+;;   (setq mu4e-alert-notify-repeated-mails nil)
+;;   (mu4e-alert-enable-notifications))
 
 ;; init.el ends here
