@@ -2,8 +2,8 @@
 
 STATE=$(nmcli networking connectivity)
 MAILDIR_PATH=$HOME/Mail
-TRASH_FOLDER=gmail/Trash
-ALL_FOLDER=gmail/All
+# TRASH_FOLDER=gmail/Trash
+# ALL_FOLDER=gmail/All
 
 if [ $STATE = 'full' ]; then
     ##
@@ -13,7 +13,7 @@ if [ $STATE = 'full' ]; then
     # tag trashing
     notmuch tag +trashing -- $(notmuch search --output=threads \(tag:trashing or tag:deleted\) and from:/sorend\?/)
     # Move tag:trashing to the folder (there's no convenient way to move) and replace with tag:trashed
-    notmuch search --format=text0 --output=files tag:trashing and not folder:$TRASH_FOLDER | xargs -0 -n1 -I {} mv "{}" $MAILDIR_PATH/$TRASH_FOLDER/cur/
+    # notmuch search --format=text0 --output=files tag:trashing and not folder:$TRASH_FOLDER | xargs -0 -n1 -I {} mv "{}" $MAILDIR_PATH/$TRASH_FOLDER/cur/
     notmuch tag -trashing +trashed -- tag:trashing or folder:$TRASH_FOLDER
     notmuch search --format=text0 --output=files tag:killing | xargs -0 -n1 -I {} mv {} rm
 

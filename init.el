@@ -20,10 +20,12 @@
   (use-package-verbose t)
   (use-package-minimum-reported-time 0.0001))
 
-;;
-(use-package paradox
+(use-package auto-package-update
+  :custom
+  (auto-package-update-interval 7)
+  (auto-package-update-hide-results t)
   :config
-  (paradox-enable))
+  (auto-package-update-maybe))
 
 ;;
 ;; general configuration features
@@ -296,12 +298,6 @@
 
 (use-package projectile)
 
-;; (use-package helm-projectile
-;;   :hook projectile-mode
-;;   :config
-;;   (setq projectile-completion-system 'helm)
-;;   (helm-projectile-on))
-
 ;; automatically update packages every 7 days
 (use-package auto-package-update
   :demand t
@@ -519,6 +515,8 @@
   :custom
   (pdf-view-display-size 'fit-page)
   (pdf-annot-activate-created-annotations t)
+  (pdf-misc-print-programm "/usr/bin/lpr")
+  (pdf-misc-print-programm-args (quote ("-o media=A4" "-o fitplot")))
   :config
   (pdf-tools-install)
   :bind
@@ -645,7 +643,7 @@
   :custom
   (notmuch-saved-searches
    (quote
-    ((:name "inbox" :query "tag:inbox" :key "i" :sort-order newest-first)
+    ((:name "inbox" :query "tag:inbox" :key "i")
      (:name "flagged" :query "tag:flagged" :key "f")
      (:name "sent" :query "tag:sent" :key "t")
      (:name "drafts" :query "tag:draft" :key "d")
@@ -662,11 +660,19 @@
   (:map notmuch-show-mode-map
         ("S" . (lambda () "mark message as spam"
                  (interactive)
-                 (notmuch-show-tag (list "+spam" "-inbox")))))
+                 (notmuch-show-tag (list "+spam" "-inbox"))))
+        ("d" . (lambda() "mark message as deleted"
+                 (interactive)
+                 (notmuch-show-tag (list "+deleted" "-inbox"))
+                 (notmuch-show-next-thread))))
   (:map notmuch-search-mode-map
         ("S" . (lambda () "mark message as spam"
                  (interactive)
-                 (notmuch-search-tag (list "+spam" "-inbox")))))
+                 (notmuch-search-tag (list "+spam" "-inbox"))))
+        ("d" . (lambda() "mark message as deleted"
+                 (interactive)
+                 (notmuch-search-tag (list "+deleted" "-inbox"))
+                 (notmuch-search-next-thread))))
   )
 
 ;;
