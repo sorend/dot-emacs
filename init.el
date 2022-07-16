@@ -679,14 +679,6 @@
   (mail-envelope-from 'header)
   (message-sendmail-envelope-from 'header)
   :config
-  (defun copy-cfg (src dest)
-    (let ((full-src (if (file-name-absolute-p src) (src) (expand-file-name src "~/.emacs.d/external-configs"))))
-      (copy-file full-src dest)))
-  (let ((hooks-dir (expand-file-name "~/Mail/.notmuch/hooks/")))
-    (progn
-      (make-directory hooks-dir t) ;;
-      (copy-cfg "pre-new" hooks-dir)
-      (copy-cfg "post-new" hooks-dir)))
   (global-set-key (kbd "C-c m") `notmuch)
   :bind
   (:map notmuch-show-mode-map
