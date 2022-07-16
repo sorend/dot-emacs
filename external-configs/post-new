@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# tagging
+notmuch tag -inbox -unread -new -touched +trash -deleted -- folder:/Trash/
+notmuch tag -inbox -unread -new -touched +spam -- folder:/Spam/
+notmuch tag -inbox -unread -new +sent -draft -- \(folder:/Sent/ or folder:/sent/\)
+notmuch tag -inbox -unread -new +draft -- folder:/Draft/
+
+# mailers
+notmuch tag -inbox -new +newsletter +quora -- from:/@quora.com/ and tag:new
+notmuch tag -inbox -new +shopping +amazon -- from:/@amazon.in/ and tag:new
+notmuch tag -inbox -new +bankalerts +hdfc -- from:alerts@hdfcbank.net and tag:new
+notmuch tag -inbox -new +bankalerts +niyox -- from:esfb-alerts@equitasbank.com and tag:new
+notmuch tag -inbox -new +newsletter +niyox -- from:campaigns@equitasbank.com and tag:new
+notmuch tag -inbox -new +newsletter +academia -- from:updates@academia-mail.com and tag:new
+notmuch tag -inbox -new +bankalerts +twino -- from:info@twinoinvest.eu and tag:new
+notmuch tag -inbox -new +newsletter +navi -- from mf@navi.com and tag:new
+notmuch tag -inbox -new +newsletter +ebay -- from ebay@reply1.ebay.com and tag:new
+notmuch tag -inbox -new +newsletter +researcher -- from:team@email.researcher-app.com and tag:new
+notmuch tag -inbox -new +newsletter +twitter -- from:notify@twitter.com and tag:new
+notmuch tag -inbox -new +newsletter +jio -- from:info@mailer.jio.com and tag:new
+
+# direct to trash stuff
+notmuch tag -inbox -new +newsletter +trash -- from:premium@academia-mail.com and "subject:'/mentions found/'" and tag:new
+
+# tag inbox (for those in inbox)
+notmuch tag +inbox -- folder:/INBOX/ and tag:new
+
+# auto-delete old newsletters
+notmuch tag +deleted -- tag:newsletter and date:..3-months-ago
+
+# origins
+notmuch tag +svu -- from:sorend@cs.svu-ac.in or to:sorend@cs.svu-ac.in and tag:new
+notmuch tag +sadcom -- from:soren@atmakuridavidsen.com or to:soren@atmakuridavidsen.com and tag:new
+notmuch tag +corp -- from:soren@hamisoke.com or to:soren@hamisoke.com and tag:new
+
+# finished
+notmuch tag -new -- tag:new
+
+# -*- mode: shell-script -*-

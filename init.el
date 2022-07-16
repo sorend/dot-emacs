@@ -96,6 +96,7 @@
     (global-set-key (kbd "<f5>") 'revert-buffer)
     ;; theme
     (load-theme 'modus-vivendi t)
+    
     ))
 
 ;; Optionally use the `orderless' completion style.
@@ -323,6 +324,20 @@
 
 ;; needed for groovy mode
 (use-package cl-lib)
+
+;;
+;; Functions to copy external files in place
+;;
+(defun sorend/copy-cfg-file (src dest)
+  (let ((full-src (if (file-name-absolute-p src) (src) (expand-file-name src "~/.emacs.d/external-configs"))))
+    (copy-file full-src dest t)))
+(defun sorend/setup-external (ext-dir &rest ext-files)
+  (let ((ext-dir-full (expand-file-name ext-dir)))
+    (progn
+      (make-directory ext-dir t)
+      (cl-loop for fn in ext-files do (sorend/copy-cfg-file fn ext-dir-full)))))
+
+
 
 ;;
 ;; Multiple cursors
@@ -637,7 +652,16 @@
   :bind
   (("C-x C-t" . vterm)))
 
+;;
+;; Email configuration
+;;
+;;
 
+;; put notmuch files in place
+(sorend/setup-external "~/Mail/.notmuch/hooks/" "pre-new" "post-new")
+(sorend/setup-external "~/" ".notmuch-config")
+
+;; functions to setup
 (use-package notmuch
   :pin melpa-stable
   :custom
@@ -650,11 +674,19 @@
      (:name "all mail" :query "*" :key "a" :sort-order newest-first))))
   (message-kill-buffer-on-exit t)
   (mail-specify-envelope-from t)
-  (send-mail-function 'sendmail-send-it)
+  (message-send-mail-function 'smtpmail-send-it)
   (message-sendmail-f-is-evil t)
   (mail-envelope-from 'header)
   (message-sendmail-envelope-from 'header)
   :config
+  (defun copy-cfg (src dest)
+    (let ((full-src (if (file-name-absolute-p src) (src) (expand-file-name src "~/.emacs.d/external-configs"))))
+      (copy-file full-src dest)))
+  (let ((hooks-dir (expand-file-name "~/Mail/.notmuch/hooks/")))
+    (progn
+      (make-directory hooks-dir t) ;;
+      (copy-cfg "pre-new" hooks-dir)
+      (copy-cfg "post-new" hooks-dir)))
   (global-set-key (kbd "C-c m") `notmuch)
   :bind
   (:map notmuch-show-mode-map
@@ -674,6 +706,31 @@
                  (notmuch-search-tag (list "+deleted" "-inbox"))
                  (notmuch-search-next-thread))))
   )
+
+(use-package gnus-alias
+  :after notmuch message
+  :custom
+  (gnus-alias-identity-alist
+        '(("gmail" "" "Soren A D <sorend@gmail.com>" ""
+           (("X-Message-SMTP-Method" . "smtp smtp.gmail.com 465 sorend@gmail.com"))
+           "" "")
+          ("svu" "" "Soren Atmakuri Davidsen <sorend@cs.svu-ac.in>" ""
+           (("X-Message-SMTP-Method" . "smtp pixel.mxrouting.net 465 sorend@cs.svu-ac.in"))
+           "" "")
+          ("corp" "" "Soren Atmakuri Davidsen <soren@hamisoke.com>" ""
+           (("X-Message-SMTP-Method" . "smtp pixel.mxrouting.net 465 soren@hamisoke.com"))
+           "" "")
+          ("sadcom" "" "Soren Atmakuri Davidsen <soren@atmakuridavidsen.com>" ""
+           (("X-Message-SMTP-Method" . "smtp smtp.zoho.com 465 soren@atmakuridavidsen.com"))
+           "" "")))
+  (gnus-alias-identity-rules
+        '(("gmail" ("from" "sorend@gmail.com" both) "gmail")
+          ("corp" ("from" "soren@hamisoke.com" both) "corp")
+          ("svu" ("from" "sorend@cs.svu-ac.in" both) "svu")
+          ("sadcom" ("from" "soren@atmakuridavidsen.com" both) "sadcom")))
+  :config
+  (gnus-alias-init))
+
 
 ;;
 ;; epub
