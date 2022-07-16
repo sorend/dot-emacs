@@ -666,8 +666,10 @@
 
 ;; functions to setup
 (use-package notmuch
+  :after message gnus-alias
   :pin melpa-stable
   :custom
+  (notmuch-fcc-dirs '(("sorend@gmail.com" . nil)))
   (notmuch-saved-searches
    (quote
     ((:name "inbox" :query "tag:inbox" :key "i")
@@ -702,8 +704,10 @@
                  (notmuch-search-next-thread))))
   )
 
+
+
+;; use gnus-alias X-Message-SMTP-Header
 (use-package gnus-alias
-  :after notmuch message
   :custom
   (gnus-alias-identity-alist
         '(("gmail" "" "Soren A D <sorend@gmail.com>" ""
@@ -726,6 +730,19 @@
   :config
   (gnus-alias-init))
 
+;; allow to switch identity while writing mail
+(use-package message
+  :ensure f
+  :bind
+  (:map message-mode-map
+        ("C-c C-i" . sorend/message-switch-identity))
+  :config
+  (defun sorend/message-switch-identity ()
+    (interactive)
+    (message-remove-header "Fcc")
+    (message-remove-header "Organization")
+    (gnus-alias-select-identity)
+    (notmuch-fcc-header-setup)))
 
 ;;
 ;; org related configuration
@@ -733,7 +750,7 @@
 
 
 (use-package org
-  :mode (("\\.org$" . org-mode))
+  :demand t
   :custom
   (org-startup-indented t)
   (org-pretty-entities t)
