@@ -139,6 +139,7 @@
 ;;   (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package consult
+  :demand t
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c h" . consult-history)
@@ -362,8 +363,9 @@
   (setq magit-display-buffer-function
         'magit-display-buffer-fullframe-status-v1))
 
-(use-package magit-find-file
-  :bind ("C-c p" . magit-find-file-completing-read))
+;; (use consult-git-grep instead M-s-G)
+;; (use-package magit-find-file
+;;   :bind ("C-c p" . magit-find-file-completing-read))
 
 (use-package emojify
   :hook (after-init . global-emojify-mode))
@@ -739,8 +741,23 @@
   (org-startup-with-inline-images t)
   (org-image-actual-width '(300))
   (org-directory (expand-file-name "~/Mega/notes/"))
+  (org-default-notes-file org-directory)
+  ;; (org-capture-templates
+  ;;  '(("t" "Todo" entry (file+headline (expand-file-name "gtd.org" org-directory) "Tasks"))
+  ;;    ("a" "Article" entry ))
   :config
-  (plist-put org-format-latex-options :scale 2))
+  (defun sorend/org-grep (&optional initial)
+    (interactive "P")
+    (consult-ripgrep org-directory initial))
+  (plist-put org-format-latex-options :scale 2)
+  (require 'org-tempo)  ;; make
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)))
+  :bind
+  (("C-c n c" . org-capture)
+   ("C-c n f" . sorend/org-grep)))
 
 (use-package org-appear
   :after org
@@ -755,6 +772,9 @@
   (add-hook 'org-mode-hook (lambda ()
                              (org-superstar-mode 1))))
 
+
+;; welcome startup
+(find-file (expand-file-name "welcome.org" org-directory))
 
 ;;
 ;; epub

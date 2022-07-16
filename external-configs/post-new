@@ -21,7 +21,7 @@ notmuch tag -inbox -new +newsletter +twitter -- from:notify@twitter.com and tag:
 notmuch tag -inbox -new +newsletter +jio -- from:info@mailer.jio.com and tag:new
 
 # direct to trash stuff
-notmuch tag -inbox -new +newsletter +trash -- from:premium@academia-mail.com and "subject:'/mentions found/'" and tag:new
+notmuch tag -inbox -new +newsletter +trash -- from:premium@academia-mail.com and tag:new
 
 # tag inbox (for those in inbox)
 notmuch tag +inbox -- folder:/INBOX/ and tag:new
