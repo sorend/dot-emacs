@@ -755,38 +755,6 @@
   (add-hook 'org-mode-hook (lambda ()
                              (org-superstar-mode 1))))
 
-;; org roam for organizing
-(use-package org-roam
-  :after org
-  :init (setq org-roam-v2-ack t) ;; Acknowledge V2 upgrade
-  :custom
-  (org-roam-directory (file-truename org-directory))
-  :config
-  (org-roam-setup)
-  :bind (("C-c n f" . org-roam-node-find)
-         (:map org-mode-map
-               (("C-c n i" . org-roam-node-insert)
-                ("C-c n o" . org-id-get-create)
-                ("C-c n t" . org-roam-tag-add)
-                ("C-c n a" . org-roam-alias-add)
-                ("C-c n l" . org-roam-buffer-toggle)))))
-
-(use-package consult-org-roam
-  :after org
-  :init
-  (require 'consult-org-roam)
-  ;; Activate the minor-mode
-  (consult-org-roam-mode 1)
-  :custom
-  (consult-org-roam-grep-func #'consult-ripgrep)
-  :config
-  ;; Eventually suppress previewing for certain functions
-  (consult-customize consult-org-roam-forward-links
-                     :preview-key (kbd "M-."))
-  :bind
-  ("C-c n e" . consult-org-roam-file-find)
-  ("C-c n b" . consult-org-roam-backlinks)
-  ("C-c n r" . consult-org-roam-search))
 
 ;;
 ;; epub
