@@ -794,6 +794,22 @@
   (add-hook 'org-mode-hook (lambda ()
                              (org-superstar-mode 1))))
 
+;; org-present
+(use-package org-present
+  :after org
+  :hook
+  (org-present-mode . (lambda ()
+                        (display-line-numbers-mode -1)
+                        (org-present-big)
+                        (org-display-inline-images)
+                        (org-present-hide-cursor)
+                        (org-present-read-only)))
+  (org-present-mode-quit . (lambda ()
+                             (display-line-numbers-mode +1)
+                             (org-present-small)
+                             (org-remove-inline-images)
+                             (org-present-show-cursor)
+                             (org-present-read-write))))
 
 ;; welcome startup
 (find-file (expand-file-name "welcome.org" org-directory))
