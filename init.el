@@ -83,6 +83,11 @@
           auth-source-do-cache nil
           auth-sources '(password-store))
 
+    ;; ediff
+    (setq ediff-split-window-function 'split-window-horizontally
+          ediff-diff-options "-w"
+          ediff-window-setup-function 'ediff-setup-windows-plain)
+    
     (setq inhibit-startup-message t)
     (setq-default c-basic-offset 4
                   indent-tabs-mode nil
