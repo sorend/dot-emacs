@@ -119,29 +119,29 @@
   :config
   (marginalia-mode))
 
-;; (use-package embark
-;;   :bind
-;;   (("C-." . embark-act)         ;; pick some comfortable binding
-;;    ("C-;" . embark-dwim)        ;; good alternative: M-.
-;;    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-;;   :init
-;;   ;; Optionally replace the key help with a completing-read interface
-;;   (setq prefix-help-command #'embark-prefix-help-command)
-;;   :config
-;;   ;; Hide the mode line of the Embark live/completions buffers
-;;   (add-to-list 'display-buffer-alist
-;;                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-;;                  nil
-;;                  (window-parameters (mode-line-format . none)))))
+(use-package embark
+  :bind
+  (("C-." . embark-act)         ;; pick some comfortable binding
+   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+  :init
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+  :config
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
 
-;; ;; Consult users will also want the embark-consult package.
-;; (use-package embark-consult
-;;   :after (embark consult)
-;;   :demand t ; only necessary if you have the hook below
-;;   ;; if you want to have consult previews as you move around an
-;;   ;; auto-updating embark collect buffer
-;;   :hook
-;;   (embark-collect-mode . consult-preview-at-point-mode))
+;; Consult users will also want the embark-consult package.
+(use-package embark-consult
+  :after (embark consult)
+  :demand t ; only necessary if you have the hook below
+  ;; if you want to have consult previews as you move around an
+  ;; auto-updating embark collect buffer
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package consult
   :demand t
@@ -754,6 +754,8 @@
 ;;
 
 
+
+
 (use-package org
   :demand t
   :custom
@@ -811,7 +813,22 @@
                              (org-present-show-cursor)
                              (org-present-read-write))))
 
+(use-package citar
+  :bind (("C-c b" . citar-insert-citation)
+         :map minibuffer-local-map
+         ("M-b" . citar-insert-preset))
+  :custom
+  (citar-bibliography '("~/Mega/research/bib/references.bib")))
+
+(use-package citar-embark
+  :after citar embark
+  :no-require
+  :config (citar-embark-mode))
+
+
+;;
 ;; welcome startup
+;;
 (find-file (expand-file-name "welcome.org" org-directory))
 
 ;;
