@@ -14,13 +14,14 @@ notmuch tag -inbox -new +bankalerts +niyox -- from:esfb-alerts@equitasbank.com a
 notmuch tag -inbox -new +newsletter +niyox -- from:campaigns@equitasbank.com and tag:new
 notmuch tag -inbox -new +newsletter +academia -- from:updates@academia-mail.com and tag:new
 notmuch tag -inbox -new +bankalerts +twino -- from:info@twinoinvest.eu and tag:new
-notmuch tag -inbox -new +newsletter +navi -- from mf@navi.com and tag:new
+notmuch tag -inbox -new +newsletter +navi +mf -- from mf@navi.com and tag:new
 notmuch tag -inbox -new +newsletter +ebay -- from ebay@reply1.ebay.com and tag:new
 notmuch tag -inbox -new +newsletter +researcher -- from:team@email.researcher-app.com and tag:new
 notmuch tag -inbox -new +newsletter +twitter -- \(from:notify@twitter.com or from:info@twitter.com\) and tag:new
 notmuch tag -inbox -new +newsletter +jio -- from:info@mailer.jio.com and tag:new
 notmuch tag -inbox -new +newsletter +rg -- from:no-reply@researchgatemail.net and 'subject:"/published an article/"' and tag:new
-notmuch tag -inbox -new +newsletter -- from:info@axismf.com and tag:new
+notmuch tag -inbox -new +newsletter +mf -- from:info@axismf.com and tag:new
+notmuch tag -inbox -new +newsletter +mf -- from:info@kotak-amc.com and tag:new
 
 # direct to trash stuff
 notmuch tag -inbox -new +newsletter +trash -- from:premium@academia-mail.com and tag:new
