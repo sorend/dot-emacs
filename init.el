@@ -195,7 +195,8 @@
          ;; Minibuffer history
          :map minibuffer-local-map
          ("M-s" . consult-history)                 ;; orig. next-matching-history-element
-         ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+         ("M-r" . consult-history))
+
 
   ;; Enable automatic preview at point in the *Completions* buffer. This is
   ;; relevant when you use the default completion UI.
@@ -304,7 +305,7 @@
   :hook
   (prog-mode . rainbow-delimiters-mode))
 
-(use-package projectile)
+;; disable for now, use project.el (use-package projectile)
 
 ;; automatically update packages every 7 days
 (use-package auto-package-update
@@ -659,6 +660,20 @@
   :pin melpa
   :bind
   (("C-x C-t" . vterm)))
+
+;; dired
+(use-package dired
+  :ensure nil
+  :bind
+  (("C-x C-j" . dired-jump)))
+
+(use-package all-the-icons-dired
+  :if (display-graphic-p)
+  :after dired
+  :hook (dired-mode . all-the-icons-dired-mode))
+
+(use-package dired-single
+  :after dired)
 
 ;;
 ;; Email configuration
