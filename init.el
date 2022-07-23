@@ -101,7 +101,9 @@
     ;; refresh whee
     (global-set-key (kbd "<f5>") 'revert-buffer)
     ;; theme
-    (load-theme 'modus-vivendi t)
+    ;;    (load-theme 'modus-vivendi t)
+    (load-theme 'modus-operandi t)
+    (setq modus-themes-org-blocks 'tinted)
     
     ))
 
