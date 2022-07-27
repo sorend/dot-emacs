@@ -62,10 +62,10 @@
 
     (recentf-mode 1)
     (add-to-list 'default-frame-alist '(font . "JetBrains Mono-14"))
-    (add-to-list 'default-frame-alist '(line-spacing . 0.2))
+    ;; (add-to-list 'default-frame-alist '(line-spacing . 0.2))
 
     (when (string-equal system-name "rebala") ;; for laptop
-      (set-face-attribute 'default nil :height 165))
+      (set-face-attribute 'default nil :height 125))
 
     (toggle-frame-maximized)
     (setq inhibit-splash-screen t)
@@ -104,7 +104,9 @@
     ;;    (load-theme 'modus-vivendi t)
     (load-theme 'modus-operandi t)
     (setq modus-themes-org-blocks 'tinted)
-    
+    ;; yes/no -> y/n
+    (defalias 'yes-or-no-p 'y-or-n-p)
+    (setq revert-without-query '(".*pdf$"))
     ))
 
 ;; Optionally use the `orderless' completion style.
@@ -790,15 +792,26 @@
   (defun sorend/org-grep (&optional initial)
     (interactive "P")
     (consult-ripgrep org-directory initial))
-  (plist-put org-format-latex-options :scale 2)
+  ;; (plist-put org-format-latex-options :scale 2)
   (require 'org-tempo)  ;; make
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
      (python . t)))
+  (add-hook 'org-mode-hook #'visual-line-mode)
+  (with-eval-after-load 'ox-latex
+    (add-to-list 'org-latex-classes
+                 '("IEEEtran"
+                   "\\documentclass{IEEEtran}"
+                   ("\\section{%s}" . "\\section*{%s}")
+                   ("\\subsection{%s}" . "\\subsection*{%s}")
+                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                   ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                   ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
   :bind
   (("C-c n c" . org-capture)
    ("C-c n f" . sorend/org-grep)))
+
 
 (use-package org-appear
   :after org
@@ -841,6 +854,12 @@
   :after citar embark
   :no-require
   :config (citar-embark-mode))
+
+;;
+;; notebooks
+;;
+;; (use-package ein)
+
 
 
 ;;
