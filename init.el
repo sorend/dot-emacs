@@ -3,6 +3,7 @@
 ;; initialize package setup
 (require 'package)
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
                          ("melpa" . "https://melpa.org/packages/")
                          ("melpa-stable" . "https://stable.melpa.org/packages/")
                          ("org" . "https://orgmode.org/elpa/")))
@@ -87,6 +88,9 @@
     (setq ediff-split-window-function 'split-window-horizontally
           ediff-diff-options "-w"
           ediff-window-setup-function 'ediff-setup-windows-plain)
+
+    ;; diable warnings
+    (setq warning-minimum-level :error)
     
     (setq inhibit-startup-message t)
     (setq-default c-basic-offset 4
@@ -785,6 +789,7 @@
   (org-image-actual-width '(300))
   (org-directory (expand-file-name "~/Mega/notes/"))
   (org-default-notes-file org-directory)
+  (org-latex-pdf-process '("latexmk -f -pdf -%latex -bibtex -interaction=nonstopmode -output-directory=%o %f"))
   ;; (org-capture-templates
   ;;  '(("t" "Todo" entry (file+headline (expand-file-name "gtd.org" org-directory) "Tasks"))
   ;;    ("a" "Article" entry ))
@@ -799,6 +804,8 @@
    '((emacs-lisp . t)
      (python . t)))
   (add-hook 'org-mode-hook #'visual-line-mode)
+  ;; latex headlines can be ignored
+  ;; latex can handle IEEEtran class
   (with-eval-after-load 'ox-latex
     (add-to-list 'org-latex-classes
                  '("IEEEtran"
@@ -812,6 +819,12 @@
   (("C-c n c" . org-capture)
    ("C-c n f" . sorend/org-grep)))
 
+(use-package org-contrib
+  :after org
+  :pin nongnu
+  :config
+  (require 'ox-extra)
+  (ox-extras-activate '(ignore-headlines)))
 
 (use-package org-appear
   :after org
@@ -844,11 +857,23 @@
                              (org-present-read-write))))
 
 (use-package citar
+  :after org
   :bind (("C-c b" . citar-insert-citation)
          :map minibuffer-local-map
          ("M-b" . citar-insert-preset))
   :custom
-  (citar-bibliography '("~/Mega/research/bib/references.bib")))
+  (citar-bibliography '("~/Mega/research/bib/references.bib"))
+  :config
+  (setq 
+        org-cite-export-processors '((latex biblatex) (t csl))
+        org-support-shift-select t)
+  (setq org-cite-insert-processor 'citar
+        org-cite-follow-processor 'citar
+        org-cite-activate-processor 'citar)
+  (require 'oc)
+  (require 'oc-biblatex)
+  (require 'oc-csl)
+  (require 'oc-natbib))
 
 (use-package citar-embark
   :after citar embark
@@ -859,8 +884,6 @@
 ;; notebooks
 ;;
 ;; (use-package ein)
-
-
 
 ;;
 ;; welcome startup

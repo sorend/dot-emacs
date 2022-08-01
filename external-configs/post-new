@@ -22,6 +22,7 @@ notmuch tag -inbox -new +newsletter +jio -- from:info@mailer.jio.com and tag:new
 notmuch tag -inbox -new +newsletter +rg -- from:no-reply@researchgatemail.net and 'subject:"/published an article/"' and tag:new
 notmuch tag -inbox -new +newsletter +mf -- from:info@axismf.com and tag:new
 notmuch tag -inbox -new +newsletter +mf -- from:info@kotak-amc.com and tag:new
+notmuch tag -inbox -new +newsletter +ieee -- from:ieee-spectrum@deliver.ieee.org and tag:new
 
 # direct to trash stuff
 notmuch tag -inbox -new +newsletter +trash -- from:premium@academia-mail.com and tag:new
@@ -29,6 +30,7 @@ notmuch tag -inbox -new +trash -- from:scholarcitations-noreply@google.com and '
 notmuch tag -inbox -new +trash -- from:billing@mitsu.in and tag:new
 notmuch tag -inbox -new +trash -- from:familysafety@microsoft.com and 'subject:"/have more screen time/"' and tag:new
 notmuch tag -inbox -new +trash -- from:no-reply@researchgatemai and 'subject:"Soren, people are reading your work"' and tag:new
+
 
 # tag inbox (for those in inbox)
 notmuch tag +inbox -- folder:/INBOX/ and tag:new
