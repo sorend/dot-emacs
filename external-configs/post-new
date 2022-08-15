@@ -23,6 +23,9 @@ notmuch tag -inbox -new +newsletter +rg -- from:no-reply@researchgatemail.net an
 notmuch tag -inbox -new +newsletter +mf -- from:info@axismf.com and tag:new
 notmuch tag -inbox -new +newsletter +mf -- from:info@kotak-amc.com and tag:new
 notmuch tag -inbox -new +newsletter +ieee -- from:ieee-spectrum@deliver.ieee.org and tag:new
+notmuch tag -inbox -new +newsletter -- from:info@meercode.io and tag:new
+notmuch tag -inbox -new +newsletter -- from:monday.reply@brighttalk.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:webinars@devops.com and tag:new
 
 # direct to trash stuff
 notmuch tag -inbox -new +newsletter +trash -- from:premium@academia-mail.com and tag:new

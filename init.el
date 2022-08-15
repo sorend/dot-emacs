@@ -1,33 +1,43 @@
 ;; init.el --- Emacs configuration
 
+;; straight setup
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+(setq straight-use-package-by-default t)
+(straight-use-package 'use-package)
+
 ;; initialize package setup
-(require 'package)
-(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-                         ("melpa" . "https://melpa.org/packages/")
-                         ("melpa-stable" . "https://stable.melpa.org/packages/")
-                         ("org" . "https://orgmode.org/elpa/")))
-(package-initialize)
+;; (require 'package)
+;; (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+;;                          ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+;;                          ("melpa" . "https://melpa.org/packages/")
+;;                          ("melpa-stable" . "https://stable.melpa.org/packages/")
+;;                          ("org" . "https://orgmode.org/elpa/")))
+;; (package-initialize)
 
-;; need use-package if we don't have it already
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
+;; ;; need use-package if we don't have it already
+;; (unless (package-installed-p 'use-package)
+;;   (package-refresh-contents)
+;;   (package-install 'use-package))
 
-(use-package use-package
-  :custom
-  (use-package-always-ensure t)
-  ;; (use-package-always-demand t)
-  (use-package-always-defer nil)
-  (use-package-verbose t)
-  (use-package-minimum-reported-time 0.0001))
 
-(use-package auto-package-update
-  :custom
-  (auto-package-update-interval 7)
-  (auto-package-update-hide-results t)
-  :config
-  (auto-package-update-maybe))
+;; (use-package auto-package-update
+;;   :custom
+;;   (auto-package-update-interval 7)
+;;   (auto-package-update-hide-results t)
+;;   :config
+;;   (auto-package-update-maybe))
 
 ;;
 ;; general configuration features
@@ -53,6 +63,7 @@
   (savehist-mode))
 
 (use-package emacs
+  :straight (:type built-in)
   :config
   (progn
     (when (window-system)
@@ -91,7 +102,7 @@
 
     ;; diable warnings
     (setq warning-minimum-level :error)
-    
+
     (setq inhibit-startup-message t)
     (setq-default c-basic-offset 4
                   indent-tabs-mode nil
@@ -584,7 +595,7 @@
 ;;   :init (company-auctex-init))
 
 (use-package tex-site
-  :ensure auctex
+  :straight auctex
   :commands (latex-mode LaTeX-mode plain-tex-mode)
   :config
   (setq TeX-source-correlate-mode t
@@ -649,6 +660,10 @@
 
 (use-package biblio)
 
+(use-package biblio-zotero
+  :straight (biblio-zotero :type git :host github :repo "gkowzan/biblio-zotero")
+  :commands (biblio-zotero-insert-bibtex))
+
 (use-package parsebib)
 
 (use-package ebib
@@ -665,13 +680,12 @@
 ;;
 (use-package vterm
   :if (string-equal system-type "gnu/linux")
-  :pin melpa
   :bind
   (("C-x C-t" . vterm)))
 
 ;; dired
 (use-package dired
-  :ensure nil
+  :straight (:type built-in)
   :bind
   (("C-x C-j" . dired-jump)))
 
@@ -695,7 +709,6 @@
 ;; functions to setup
 (use-package notmuch
   :after message gnus-alias
-  :pin melpa-stable
   :custom
   (notmuch-fcc-dirs '(("sorend@gmail.com" . nil)))
   (notmuch-saved-searches
@@ -760,7 +773,7 @@
 
 ;; allow to switch identity while writing mail
 (use-package message
-  :ensure f
+  :straight (:type built-in)
   :bind
   (:map message-mode-map
         ("C-c C-i" . sorend/message-switch-identity))
@@ -780,6 +793,7 @@
 
 
 (use-package org
+  :straight (:type built-in)
   :demand t
   :custom
   (org-startup-indented t)
@@ -821,7 +835,6 @@
 
 (use-package org-contrib
   :after org
-  :pin nongnu
   :config
   (require 'ox-extra)
   (ox-extras-activate '(ignore-headlines)))
@@ -864,7 +877,7 @@
   :custom
   (citar-bibliography '("~/Mega/research/bib/references.bib"))
   :config
-  (setq 
+  (setq
         org-cite-export-processors '((latex biblatex) (t csl))
         org-support-shift-select t)
   (setq org-cite-insert-processor 'citar
