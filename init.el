@@ -569,7 +569,7 @@
   (pdf-misc-print-programm "/usr/bin/lpr")
   (pdf-misc-print-programm-args (quote ("-o media=A4" "-o fitplot")))
   :config
-  (pdf-tools-install)
+  ;; (pdf-tools-install) ;; only do it on demand
   :bind
   (:map pdf-view-mode-map
         ("C-s" . 'isearch-forward)
