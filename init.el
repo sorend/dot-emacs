@@ -716,6 +716,7 @@
 
 ;; functions to setup
 (use-package notmuch
+  :straight (:host github :repo "notmuch/notmuch")
   :after message gnus-alias
   :custom
   (notmuch-fcc-dirs '(("sorend@gmail.com" . nil)))
