@@ -1,5 +1,12 @@
 ;; init.el --- Emacs configuration
 
+;; for work (only at work I use windows)
+(if (string-equal system-type "windows-nt")
+    (setq url-proxy-services
+          '(("no_proxy" . "\\(localhost\\|bdpnet.dk\\|bdunet.dk\\)")
+            ("http" . "httpproxy.bdpnet.dk:8080")
+            ("https" . "httpproxy.bdpnet.dk:8080"))))
+
 ;; straight setup
 (defvar bootstrap-version)
 (let ((bootstrap-file
@@ -8,7 +15,7 @@
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
         (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
          'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
@@ -287,6 +294,7 @@
 (use-package dash)
 
 (use-package better-defaults
+  :straight (:host nil :repo "https://git.sr.ht/~technomancy/better-defaults")
   :config
   (setq backup-directory-alist
         `((".*" . ,temporary-file-directory)))

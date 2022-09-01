@@ -26,6 +26,7 @@ notmuch tag -inbox -new +newsletter +ieee -- from:ieee-spectrum@deliver.ieee.org
 notmuch tag -inbox -new +newsletter -- from:info@meercode.io and tag:new
 notmuch tag -inbox -new +newsletter -- from:monday.reply@brighttalk.com and tag:new
 notmuch tag -inbox -new +newsletter -- from:webinars@devops.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:products@emailers.idfcmf.com and tag:new
 
 # direct to trash stuff
 notmuch tag -inbox -new +newsletter +trash -- from:premium@academia-mail.com and tag:new
