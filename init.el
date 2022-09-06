@@ -24,28 +24,6 @@
 (setq straight-use-package-by-default t)
 (straight-use-package 'use-package)
 
-;; initialize package setup
-;; (require 'package)
-;; (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-;;                          ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-;;                          ("melpa" . "https://melpa.org/packages/")
-;;                          ("melpa-stable" . "https://stable.melpa.org/packages/")
-;;                          ("org" . "https://orgmode.org/elpa/")))
-;; (package-initialize)
-
-;; ;; need use-package if we don't have it already
-;; (unless (package-installed-p 'use-package)
-;;   (package-refresh-contents)
-;;   (package-install 'use-package))
-
-
-;; (use-package auto-package-update
-;;   :custom
-;;   (auto-package-update-interval 7)
-;;   (auto-package-update-hide-results t)
-;;   :config
-;;   (auto-package-update-maybe))
-
 ;;
 ;; general configuration features
 ;;
@@ -123,8 +101,8 @@
     ;; refresh whee
     (global-set-key (kbd "<f5>") 'revert-buffer)
     ;; theme
-    ;;    (load-theme 'modus-vivendi t)
-    (load-theme 'modus-operandi t)
+    (load-theme 'modus-vivendi t)
+    ;; (load-theme 'modus-operandi t)
     (setq modus-themes-org-blocks 'tinted)
     ;; yes/no -> y/n
     (defalias 'yes-or-no-p 'y-or-n-p)
@@ -401,7 +379,10 @@
 ;;   :bind ("C-c p" . magit-find-file-completing-read))
 
 (use-package emojify
-  :hook (after-init . global-emojify-mode))
+  :custom
+  (emojify-download-emojis-p . t)
+  :hook
+  (after-init . global-emojify-mode))
 
 (use-package exec-path-from-shell
   :config
@@ -733,25 +714,25 @@
   (message-sendmail-f-is-evil t)
   (mail-envelope-from 'header)
   (message-sendmail-envelope-from 'header)
-  :config
-  (global-set-key (kbd "C-c m") `notmuch)
-  :bind
-  (:map notmuch-show-mode-map
-        ("S" . (lambda () "mark message as spam"
-                 (interactive)
-                 (notmuch-show-tag (list "+spam" "-inbox"))))
-        ("d" . (lambda() "mark message as deleted"
-                 (interactive)
-                 (notmuch-show-tag (list "+deleted" "-inbox"))
-                 (notmuch-show-next-thread))))
-  (:map notmuch-search-mode-map
-        ("S" . (lambda () "mark message as spam"
-                 (interactive)
-                 (notmuch-search-tag (list "+spam" "-inbox"))))
-        ("d" . (lambda() "mark message as deleted"
-                 (interactive)
-                 (notmuch-search-tag (list "+deleted" "-inbox"))
-                 (notmuch-search-next-thread))))
+  ;; :config
+  ;; (global-set-key (kbd "C-c m") `notmuch)
+  ;; :bind
+  ;; (:map notmuch-show-mode-map
+  ;;       ("S" . (lambda () "mark message as spam"
+  ;;                (interactive)
+  ;;                (notmuch-show-tag (list "+spam" "-inbox"))))
+  ;;       ("d" . (lambda() "mark message as deleted"
+  ;;                (interactive)
+  ;;                (notmuch-show-tag (list "+deleted" "-inbox"))
+  ;;                (notmuch-show-next-thread))))
+  ;; (:map notmuch-search-mode-map
+  ;;       ("S" . (lambda () "mark message as spam"
+  ;;                (interactive)
+  ;;                (notmuch-search-tag (list "+spam" "-inbox"))))
+  ;;       ("d" . (lambda() "mark message as deleted"
+  ;;                (interactive)
+  ;;                (notmuch-search-tag (list "+deleted" "-inbox"))
+  ;;                (notmuch-search-next-thread))))
   )
 
 
@@ -793,6 +774,75 @@
     (message-remove-header "Organization")
     (gnus-alias-select-identity)
     (notmuch-fcc-header-setup)))
+
+;; notmuch-x
+(use-package notmuch-x
+  :straight (notmuch-x :host github :repo "bcardoso/notmuch-x")
+  :after notmuch
+  :bind (("C-c m"            . notmuch-x-run-notmuch)
+         ("C-c M"            . notmuch-x-update-dwim)
+         ("C-x m"            . notmuch-mua-new-mail)
+         (:map notmuch-search-mode-map
+               ("Q"          . notmuch-x-kill-all-search-buffers)
+               ("S"          . notmuch-x-edit-current-search)
+               ("U"          . notmuch-unthreaded)
+               ("u"          . sorend/notmuch-tag-toggle-unread)
+               ("f"          . sorend/notmuch-tag-toggle-flagged)
+               ("a"          . sorend/notmuch-tag-archived)
+               ("T"          . sorend/notmuch-tag-todo)
+               ("i"          . sorend/notmuch-tag-inbox)
+               ("d"          . sorend/notmuch-tag-trash))
+         (:map notmuch-show-mode-map
+               ("<C-return>" . notmuch-x-toggle-thread-visibility)
+               ("<RET>"      . notmuch-x-toggle-message-or-browse-url)
+               ("<tab>"      . notmuch-x-next-button-or-link)
+               ("<backtab>"  . notmuch-x-previous-button-or-link)
+               ("n"          . notmuch-show-next-message)
+               ("N"          . notmuch-show-next-open-message)
+               ("p"          . notmuch-show-previous-message)
+               ("P"          . notmuch-show-previous-open-message)
+               ("o"          . notmuch-x-view-part-in-browser)
+               ("u"          . sorend/notmuch-tag-toggle-unread)
+               ("f"          . sorend/notmuch-tag-toggle-flagged)
+               ("a"          . sorend/notmuch-tag-archived)
+               ("T"          . sorend/notmuch-tag-todo)
+               ("i"          . sorend/notmuch-tag-inbox)
+               ("d"          . sorend/notmuch-tag-trash)))
+  :config
+  (defun sorend/notmuch-tag-toggle-unread ()
+    "Toggle 'unread' tag."
+    (interactive)
+    (notmuch-x-tag-toggle-dwim "unread"))
+
+  (defun sorend/notmuch-tag-toggle-flagged ()
+    "Toggle 'flagged' tag."
+    (interactive)
+    (notmuch-x-tag-toggle-dwim "flagged"))
+
+  (defun sorend/notmuch-tag-archived ()
+    "Tag thread as 'archived'."
+    (interactive)
+    (notmuch-x-tag-thread-dwim '("-inbox" "-todo" "-trash" "-unread") t))
+
+  (defun sorend/notmuch-tag-todo ()
+    "Tag selected message(s) as 'todo'."
+    (interactive)
+    (notmuch-x-tag-dwim '("+todo" "+inbox" "-trash")))
+
+  (defun sorend/notmuch-tag-inbox ()
+    "Tag selected message(s) as 'inbox'."
+    (interactive)
+    (notmuch-x-tag-dwim '("+inbox" "-trash")))
+
+  (defun sorend/notmuch-tag-spam ()
+    "Tag selected message(s) as 'inbox'."
+    (interactive)
+    (notmuch-x-tag-dwim '("-inbox" "+spam")))
+  
+  (defun sorend/notmuch-tag-trash ()
+    "Tag selected message(s) as 'trash'."
+    (interactive)
+    (notmuch-x-tag-dwim '("+trash" "-inbox" "-todo" "-unread"))))
 
 ;;
 ;; org related configuration
