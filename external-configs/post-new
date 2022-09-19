@@ -27,6 +27,21 @@ notmuch tag -inbox -new +newsletter -- from:info@meercode.io and tag:new
 notmuch tag -inbox -new +newsletter -- from:monday.reply@brighttalk.com and tag:new
 notmuch tag -inbox -new +newsletter -- from:webinars@devops.com and tag:new
 notmuch tag -inbox -new +newsletter -- from:products@emailers.idfcmf.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:customerservice@ack-media.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:noreply@content.goibibo.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:hermes.reply@brighttalk.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:analysts@techstrongresearch.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:events@techstronggroup.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:flickrteam@arrow.flickr.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:irctctourismoffers@irctc.co.in and tag:new
+notmuch tag -inbox -new +newsletter -- from:mfservice@motilaloswal.com and and "body:'/To opt out from our newsletter/'" and tag:new
+notmuch tag -inbox -new +newsletter -- from:mfmarketing@invesco.com and "body:'/from this newsletter/'" and tag:new
+
+# otp marking
+notmuch tag +otp -- from:/bank/ and subject:/OTP/ and tag:new
+
+# other
+notmuch tag -inbox -new +msfamily -- from:familysafety@microsoft.com and 'subject:"/Weekly activity report/"' and tag:new
 
 # direct to trash stuff
 notmuch tag -inbox -new +newsletter +trash -- from:premium@academia-mail.com and tag:new
@@ -39,8 +54,9 @@ notmuch tag -inbox -new +trash -- from:no-reply@researchgatemai and 'subject:"So
 # tag inbox (for those in inbox)
 notmuch tag +inbox -- folder:/INBOX/ and tag:new
 
-# auto-delete old newsletters
-notmuch tag +deleted -- tag:newsletter and date:..3-months-ago
+# auto-delete rules
+notmuch tag +trash -- tag:newsletter and date:..3-months-ago
+notmuch tag +trash -- tag:otp and date:..2-hours-ago
 
 # origins
 notmuch tag +svu -- from:sorend@cs.svu-ac.in or to:sorend@cs.svu-ac.in and tag:new
