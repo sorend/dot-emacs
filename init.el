@@ -380,7 +380,7 @@
 
 (use-package emojify
   :custom
-  (emojify-download-emojis-p . t)
+  (emojify-download-emojis-p t)
   :hook
   (after-init . global-emojify-mode))
 

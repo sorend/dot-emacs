@@ -34,7 +34,7 @@ notmuch tag -inbox -new +newsletter -- from:analysts@techstrongresearch.com and 
 notmuch tag -inbox -new +newsletter -- from:events@techstronggroup.com and tag:new
 notmuch tag -inbox -new +newsletter -- from:flickrteam@arrow.flickr.com and tag:new
 notmuch tag -inbox -new +newsletter -- from:irctctourismoffers@irctc.co.in and tag:new
-notmuch tag -inbox -new +newsletter -- from:mfservice@motilaloswal.com and and "body:'/To opt out from our newsletter/'" and tag:new
+notmuch tag -inbox -new +newsletter -- from:mfservice@motilaloswal.com and "body:'/To opt out from our newsletter/'" and tag:new
 notmuch tag -inbox -new +newsletter -- from:mfmarketing@invesco.com and "body:'/from this newsletter/'" and tag:new
 
 # otp marking
