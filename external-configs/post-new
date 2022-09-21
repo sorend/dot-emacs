@@ -39,6 +39,7 @@ notmuch tag -inbox -new +newsletter -- from:mfmarketing@invesco.com and "body:'/
 
 # otp marking
 notmuch tag +otp -- from:/bank/ and subject:/OTP/ and tag:new
+notmuch tag +otp -- from:/microsoft.com/ and "subject:'/single-use code/'" and tag:new
 
 # other
 notmuch tag -inbox -new +msfamily -- from:familysafety@microsoft.com and 'subject:"/Weekly activity report/"' and tag:new
