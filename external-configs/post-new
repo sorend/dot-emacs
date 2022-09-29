@@ -36,13 +36,20 @@ notmuch tag -inbox -new +newsletter -- from:flickrteam@arrow.flickr.com and tag:
 notmuch tag -inbox -new +newsletter -- from:irctctourismoffers@irctc.co.in and tag:new
 notmuch tag -inbox -new +newsletter -- from:mfservice@motilaloswal.com and "body:'/To opt out from our newsletter/'" and tag:new
 notmuch tag -inbox -new +newsletter -- from:mfmarketing@invesco.com and "body:'/from this newsletter/'" and tag:new
+notmuch tag -inbox -new +newsletter +msfamily -- from:familysafety@microsoft.com and 'subject:"/Weekly activity report/"' and tag:new
+notmuch tag -inbox -new +newsletter -- from:aws-marketing-email-replies@amazon.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:Newsletter@email.elitedangerous.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:noreply-local-guides@google.com and subject:/Newsletter/ and tag:new
+notmuch tag -inbox -new +newsletter -- from:info@service.icicipruamc.com and "body:'/unsubscribe from this newsletter/'" and tag:new
+notmuch tag -inbox -new +newsletter -- from:Noreply@e.crm.lego.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:noreply@paytmoffers.in and tag:new
+notmuch tag -inbox -new +newsletter -- from:noreply@mailer.abhibus.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:investments@goniyo.com and "subject:'/Invest the change Weekly Summary/'" and tag:new
+notmuch tag -inbox -new +newsletter -- from:ebay@reply.ebay.com and body:/Newsletter/ and tag:new
 
 # otp marking
 notmuch tag +otp -- from:/bank/ and subject:/OTP/ and tag:new
 notmuch tag +otp -- from:/microsoft.com/ and "subject:'/single-use code/'" and tag:new
-
-# other
-notmuch tag -inbox -new +msfamily -- from:familysafety@microsoft.com and 'subject:"/Weekly activity report/"' and tag:new
 
 # direct to trash stuff
 notmuch tag -inbox -new +newsletter +trash -- from:premium@academia-mail.com and tag:new
@@ -57,7 +64,7 @@ notmuch tag +inbox -- folder:/INBOX/ and tag:new
 
 # auto-delete rules
 notmuch tag +trash -- tag:newsletter and date:..3-months-ago
-notmuch tag +trash -- tag:otp and date:..2-hours-ago
+notmuch tag +trash -inbox -- tag:otp and date:..2-hours-ago
 
 # origins
 notmuch tag +svu -- from:sorend@cs.svu-ac.in or to:sorend@cs.svu-ac.in and tag:new

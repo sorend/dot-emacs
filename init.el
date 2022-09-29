@@ -107,6 +107,8 @@
     ;; yes/no -> y/n
     (defalias 'yes-or-no-p 'y-or-n-p)
     (setq revert-without-query '(".*pdf$"))
+    ;; display time mode on
+    (display-time-mode 1)
     ))
 
 ;; Optionally use the `orderless' completion style.
@@ -779,6 +781,9 @@
 (use-package notmuch-x
   :straight (notmuch-x :host github :repo "bcardoso/notmuch-x")
   :after notmuch
+  :custom
+  (notmuch-x--update-timer t)
+  (notmuch-x--indicator-timer-update-interval 300)
   :bind (("C-c m"            . notmuch-x-run-notmuch)
          ("C-c M"            . notmuch-x-update-dwim)
          ("C-x m"            . notmuch-mua-new-mail)
