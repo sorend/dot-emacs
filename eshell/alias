@@ -1,4 +1,5 @@
-alias oci-auth oci session authenticate --region ap-hyderabad-1 --profile-name kubernetes
-alias emacs find-file $1
-alias k kubectl $*
+alias nil  $*
 alias vi find-file $1
+alias k kubectl $*
+alias emacs find-file $1
+alias oci-auth oci session authenticate --region ap-hyderabad-1 --profile-name kubernetes

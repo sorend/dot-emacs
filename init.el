@@ -440,7 +440,7 @@
         lsp-pylsp-plugins-jedi-use-pyenv-environment t
         lsp-pylsp-plugins-pyflakes-enabled t)
   (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
-  (lsp-enable-which-key-integration t)
+  ;; (lsp-enable-which-key-integration t)
   :custom
   (lsp-diagnostic-package :flycheck)
   (lsp-prefer-capf t)
@@ -552,7 +552,7 @@
   (pdf-misc-print-programm "/usr/bin/lpr")
   (pdf-misc-print-programm-args (quote ("-o media=A4" "-o fitplot")))
   :config
-  ;; (pdf-tools-install) ;; only do it on demand
+  (pdf-tools-install t) ;; install without asking
   :bind
   (:map pdf-view-mode-map
         ("C-s" . 'isearch-forward)
@@ -699,7 +699,7 @@
 
 ;; functions to setup
 (use-package notmuch
-  :straight (:host github :repo "notmuch/notmuch")
+  ;; :straight (:host github :repo "notmuch/notmuch")
   :after message gnus-alias
   :custom
   (notmuch-fcc-dirs '(("sorend@gmail.com" . nil)))
@@ -782,7 +782,6 @@
   :straight (notmuch-x :host github :repo "bcardoso/notmuch-x")
   :after notmuch
   :custom
-  (notmuch-x--update-timer t)
   (notmuch-x--indicator-timer-update-interval 300)
   :bind (("C-c m"            . notmuch-x-run-notmuch)
          ("C-c M"            . notmuch-x-update-dwim)
@@ -814,6 +813,7 @@
                ("i"          . sorend/notmuch-tag-inbox)
                ("d"          . sorend/notmuch-tag-trash)))
   :config
+  (setq notmuch-x--update-timer t)
   (defun sorend/notmuch-tag-toggle-unread ()
     "Toggle 'unread' tag."
     (interactive)
@@ -935,22 +935,30 @@
 
 (use-package citar
   :after org
-  :bind (("C-c b" . citar-insert-citation)
-         :map minibuffer-local-map
-         ("M-b" . citar-insert-preset))
+  :bind
+  (:map org-mode-map
+        :package org
+        ("C-c b" . #'org-cite-insert))
   :custom
-  (citar-bibliography '("~/Mega/research/bib/references.bib"))
+  (org-cite-global-bibliography '("~/Mega/research/bib/references.bib"))
+  (citar-bibliography org-cite-global-bibliography)
+  (org-cite-insert-processor 'citar)
+  (org-cite-follow-processor 'citar)
+  (org-cite-activate-processor 'citar)
+  (org-cite-export-processors '((latex biblatex) (t csl)))
   :config
-  (setq
-        org-cite-export-processors '((latex biblatex) (t csl))
-        org-support-shift-select t)
-  (setq org-cite-insert-processor 'citar
-        org-cite-follow-processor 'citar
-        org-cite-activate-processor 'citar)
-  (require 'oc)
-  (require 'oc-biblatex)
-  (require 'oc-csl)
-  (require 'oc-natbib))
+  (require 'oc-biblatex))
+  ;; :config
+  ;; (setq
+  ;;       org-cite-export-processors '((latex biblatex) (t csl))
+  ;;       org-support-shift-select t)
+  ;; (setq org-cite-insert-processor 'oc-bibtex-actions
+  ;;       org-cite-follow-processor 'citar
+  ;;       org-cite-activate-processor 'citar)
+  ;; (require 'oc)
+  ;; (require 'oc-biblatex)
+  ;; (require 'oc-csl)
+  ;; (require 'oc-natbib))
 
 (use-package citar-embark
   :after citar embark
