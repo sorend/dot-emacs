@@ -108,7 +108,7 @@
     (defalias 'yes-or-no-p 'y-or-n-p)
     (setq revert-without-query '(".*pdf$"))
     ;; display time mode on
-    (display-time-mode 1)
+    ;; (display-time-mode 1)
     ))
 
 ;; Optionally use the `orderless' completion style.
@@ -782,7 +782,8 @@
   :straight (notmuch-x :host github :repo "bcardoso/notmuch-x")
   :after notmuch
   :custom
-  (notmuch-x--indicator-timer-update-interval 300)
+  (notmuch-x--auto-update nil)
+  ;; (notmuch-x--indicator-timer-update-interval 300)
   :bind (("C-c m"            . notmuch-x-run-notmuch)
          ("C-c M"            . notmuch-x-update-dwim)
          ("C-x m"            . notmuch-mua-new-mail)
@@ -813,7 +814,7 @@
                ("i"          . sorend/notmuch-tag-inbox)
                ("d"          . sorend/notmuch-tag-trash)))
   :config
-  (setq notmuch-x--update-timer t)
+  ;; (setq notmuch-x--update-timer t)
   (defun sorend/notmuch-tag-toggle-unread ()
     "Toggle 'unread' tag."
     (interactive)
