@@ -400,6 +400,13 @@
 ;;   (flycheck-inline-mode)
 ;;   )
 
+(use-package flycheck-inline)
+
+(use-package flycheck
+  :after flycheck-inline
+  :config
+  (flycheck-inline-mode))
+
 ;; (use-package flycheck-inline)
 
 ;; ;; Requires local dependencies:
@@ -427,6 +434,7 @@
 ;;
 
 (use-package lsp-mode
+  :after which-key
   :config
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
   (setq lsp-keymap-prefix "C-c l"
@@ -440,7 +448,7 @@
         lsp-pylsp-plugins-jedi-use-pyenv-environment t
         lsp-pylsp-plugins-pyflakes-enabled t)
   (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
-  ;; (lsp-enable-which-key-integration t)
+  (lsp-enable-which-key-integration t)
   :custom
   (lsp-diagnostic-package :flycheck)
   (lsp-prefer-capf t)
@@ -454,20 +462,33 @@
 (use-package lsp-ui
   :requires lsp-mode
   :commands lsp-ui-mode
+  :custom
+  (lsp-enable-symbol-highlighting t)
+  (lsp-ui-doc-enable t)
+  (lsp-ui-doc-use-childframe t)
+  (lsp-ui-doc-position 'top)
+  (lsp-ui-doc-include-signature t)
+  (lsp-ui-sideline-enable t)
+  (lsp-ui-flycheck-enable t)
+  (lsp-ui-flycheck-list-position 'right)
+  (lsp-ui-flycheck-live-reporting t)
+  (lsp-ui-peek-enable nil)
+  (lsp-ui-peek-list-width 60)
+  (lsp-ui-peek-peek-height 25)
+  (lsp-lens-enable t)
+  (lsp-headerline-breadcrumb-enable t)
+  (lsp-modeline-code-actions-enable t)
+  (lsp-eldoc-enable-hover t)
+  (lsp-signature-auto-activate t)
+  (lsp-modeline-diagnostics-enable t)
+  (lsp-signature-render-documentation t)
+  (lsp-completion-provider :capf)
+  (lsp-completion-show-detail t)
+  (lsp-completion-show-kind t)
   :config
-  (setq lsp-ui-doc-enable t
-        lsp-ui-doc-use-childframe t
-        lsp-ui-doc-position 'top
-        lsp-ui-doc-include-signature t
-        lsp-ui-sideline-enable t
-        lsp-ui-flycheck-enable t
-        lsp-ui-flycheck-list-position 'right
-        lsp-ui-flycheck-live-reporting t
-        lsp-ui-peek-enable nil
-        lsp-ui-peek-list-width 60
-        lsp-ui-peek-peek-height 25)
   :hook
   ((lsp-mode . lsp-ui-mode)))
+
 
 (use-package lsp-treemacs)
 
