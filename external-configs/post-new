@@ -46,6 +46,11 @@ notmuch tag -inbox -new +newsletter -- from:noreply@paytmoffers.in and tag:new
 notmuch tag -inbox -new +newsletter -- from:noreply@mailer.abhibus.com and tag:new
 notmuch tag -inbox -new +newsletter -- from:investments@goniyo.com and "subject:'/Invest the change Weekly Summary/'" and tag:new
 notmuch tag -inbox -new +newsletter -- from:ebay@reply.ebay.com and body:/Newsletter/ and tag:new
+notmuch tag -inbox -new +newsletter -- from:"Black by ClearTax" and tag:new
+notmuch tag -inbox -new +newsletter -- from:"OLA Electric" and tag:new
+notmuch tag -inbox -new +newsletter -- from:webinars@securityboulevard.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:english-personalized-digest@quora.com and tag:new
+
 
 # otp marking
 notmuch tag +otp -- from:/bank/ and subject:/OTP/ and tag:new
