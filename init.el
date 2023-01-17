@@ -429,11 +429,14 @@
 (use-package lsp-mode
   :config
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (require 'lsp-pylsp)
   (setq lsp-keymap-prefix "C-c l"
         lsp-idle-delay 0.5
         lsp-enable-symbol-highlighting t
         lsp-enable-snippet nil)
   (setq lsp-pylsp-plugins-flake8-enabled t
+        lsp-pylsp-plugins-flake8-max-line-length 200
+        lsp-pylsp-plugins-pycodestyle-max-line-length 200
         lsp-pylsp-plugins-jedi-completion-enabled t
         lsp-pylsp-plugins-pycodestyle-enabled t
         lsp-pylsp-plugins-pydocstyle-enabled t
@@ -482,10 +485,12 @@
 ;;
 ;; Python configuration
 ;;
-(use-package lsp-pyright
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-pyright)
-                         (lsp))))  ; or lsp-deferred
+;; (use-package lsp-pyright
+;;   :if (string-equal system-type "gnu/linux")
+;;   :hook (python-mode . (lambda ()
+;;                          (require 'lsp-pyright)
+;;                          (lsp))))  ; or lsp-deferred
+
 
 (use-package python-mode
   :after (lsp-mode)
@@ -981,3 +986,4 @@
 ;; (use-package nov)
 
 ;; init.el ends here
+(put 'downcase-region 'disabled nil)
