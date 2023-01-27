@@ -1,11 +1,25 @@
 ;; init.el --- Emacs configuration
 
+;; Set Windows-specific preferences if running in a Windows environment.
+(defun sorend/git-windows-setup () (interactive)
+  (setq git-shell-path "C:/Udvikler/apps/PortableGit/bin")
+  (setq git-shell-executable (concat git-shell-path "/bash.exe"))
+  (add-to-list 'exec-path git-shell-path)
+  (setenv "PATH" (concat git-shell-path ";" (getenv "PATH")))
+  (message "Windows preferences set."))
+
 ;; for work (only at work I use windows)
-(if (string-equal system-type "windows-nt")
-    (setq url-proxy-services
-          '(("no_proxy" . "\\(localhost\\|bdpnet.dk\\|bdunet.dk\\)")
-            ("http" . "httpproxy.bdpnet.dk:8080")
-            ("https" . "httpproxy.bdpnet.dk:8080"))))
+(if (eq system-type 'windows-nt)
+    (progn
+      (setq url-proxy-services
+            '(("no_proxy" . "\\(localhost\\|bdpnet.dk\\|bdunet.dk\\)")
+              ("http" . "httpproxy.bdpnet.dk:8080")
+              ("https" . "httpproxy.bdpnet.dk:8080")))
+      ;; (setq explicit-shell-file-name "C:/Udvikler/apps/PortableGit/bin/bash.exe")
+      ;; (setq shell-file-name explicit-shell-file-name)
+      ;; (add-to-list 'exec-path "C:/Udvikler/apps/PortableGit/bin")
+      (sorend/git-windows-setup)))
+
 
 ;; straight setup
 (defvar bootstrap-version)
@@ -110,6 +124,8 @@
     ;; display time mode on
     (display-time-mode 1)
     ))
+
+
 
 ;; Optionally use the `orderless' completion style.
 (use-package orderless
@@ -340,6 +356,26 @@
 ;; needed for groovy mode
 (use-package cl-lib)
 
+;; keychains
+(defun sorend/keychain-file-contents (filename)
+  "Return the contents of FILENAME."
+  (with-temp-buffer
+    (insert-file-contents filename)
+    (buffer-string)))
+
+(defun sorend/keychain-refresh-environment ()
+  (interactive)
+  (let* ((ssh (sorend/keychain-file-contents (car (file-expand-wildcards "~/.keychain/*-sh" t)))))
+    (list (and ssh
+               (string-match "SSH_AUTH_SOCK[=\s]\\([^\s;\n]*\\)" ssh)
+               (setenv       "SSH_AUTH_SOCK" (match-string 1 ssh)))
+          (and ssh
+               (string-match "SSH_AGENT_PID[=\s]\\([0-9]*\\)?" ssh)
+               (setenv       "SSH_AGENT_PID" (match-string 1 ssh))))))
+
+(sorend/keychain-refresh-environment)
+
+
 ;;
 ;; Functions to copy external files in place
 ;;
@@ -351,6 +387,7 @@
     (progn
       (make-directory ext-dir t)
       (cl-loop for fn in ext-files do (sorend/copy-cfg-file fn ext-dir-full)))))
+
 
 
 
@@ -551,6 +588,7 @@
 ;;
 
 (use-package pdf-tools
+  :if (string-equal system-type "gnu/linux")
   :custom
   (pdf-view-display-size 'fit-page)
   (pdf-annot-activate-created-annotations t)
@@ -602,7 +640,7 @@
 	    TeX-view-program-selection '((output-pdf "PDF Tools"))
 		TeX-source-correlate-start-server t)
   (setq-default TeX-master "paper.tex")
-  (pdf-tools-install)
+  ;; (pdf-tools-install)
 	;; Update PDF buffers after successful LaTeX runs
   (add-hook 'TeX-after-compilation-finished-functions
 		    #'TeX-revert-document-buffer)
@@ -697,6 +735,10 @@
 ;; Email configuration
 ;;
 ;;
+
+
+(if (string-equal system-type "gnu/linux")
+    (progn
 
 ;; put notmuch files in place
 (sorend/setup-external "~/Mail/.notmuch/hooks/" "pre-new" "post-new")
@@ -848,11 +890,13 @@
     "Tag selected message(s) as 'inbox'."
     (interactive)
     (notmuch-x-tag-dwim '("-inbox" "+spam")))
-  
+
   (defun sorend/notmuch-tag-trash ()
     "Tag selected message(s) as 'trash'."
     (interactive)
     (notmuch-x-tag-dwim '("+trash" "-inbox" "-todo" "-unread"))))
+
+)) ;; end if system-type gnu/linux
 
 ;;
 ;; org related configuration
