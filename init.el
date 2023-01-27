@@ -108,7 +108,7 @@
     (defalias 'yes-or-no-p 'y-or-n-p)
     (setq revert-without-query '(".*pdf$"))
     ;; display time mode on
-    (display-time-mode 1)
+    ;; (display-time-mode 1)
     ))
 
 ;; Optionally use the `orderless' completion style.
@@ -400,6 +400,13 @@
 ;;   (flycheck-inline-mode)
 ;;   )
 
+(use-package flycheck-inline)
+
+(use-package flycheck
+  :after flycheck-inline
+  :config
+  (flycheck-inline-mode))
+
 ;; (use-package flycheck-inline)
 
 ;; ;; Requires local dependencies:
@@ -427,6 +434,7 @@
 ;;
 
 (use-package lsp-mode
+  :after which-key
   :config
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
   (require 'lsp-pylsp)
@@ -443,7 +451,7 @@
         lsp-pylsp-plugins-jedi-use-pyenv-environment t
         lsp-pylsp-plugins-pyflakes-enabled t)
   (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
-  ;; (lsp-enable-which-key-integration t)
+  (lsp-enable-which-key-integration t)
   :custom
   (lsp-diagnostic-package :flycheck)
   (lsp-prefer-capf t)
@@ -457,20 +465,33 @@
 (use-package lsp-ui
   :requires lsp-mode
   :commands lsp-ui-mode
+  :custom
+  (lsp-enable-symbol-highlighting t)
+  (lsp-ui-doc-enable t)
+  (lsp-ui-doc-use-childframe t)
+  (lsp-ui-doc-position 'top)
+  (lsp-ui-doc-include-signature t)
+  (lsp-ui-sideline-enable t)
+  (lsp-ui-flycheck-enable t)
+  (lsp-ui-flycheck-list-position 'right)
+  (lsp-ui-flycheck-live-reporting t)
+  (lsp-ui-peek-enable nil)
+  (lsp-ui-peek-list-width 60)
+  (lsp-ui-peek-peek-height 25)
+  (lsp-lens-enable t)
+  (lsp-headerline-breadcrumb-enable t)
+  (lsp-modeline-code-actions-enable t)
+  (lsp-eldoc-enable-hover t)
+  (lsp-signature-auto-activate t)
+  (lsp-modeline-diagnostics-enable t)
+  (lsp-signature-render-documentation t)
+  (lsp-completion-provider :capf)
+  (lsp-completion-show-detail t)
+  (lsp-completion-show-kind t)
   :config
-  (setq lsp-ui-doc-enable t
-        lsp-ui-doc-use-childframe t
-        lsp-ui-doc-position 'top
-        lsp-ui-doc-include-signature t
-        lsp-ui-sideline-enable t
-        lsp-ui-flycheck-enable t
-        lsp-ui-flycheck-list-position 'right
-        lsp-ui-flycheck-live-reporting t
-        lsp-ui-peek-enable nil
-        lsp-ui-peek-list-width 60
-        lsp-ui-peek-peek-height 25)
   :hook
   ((lsp-mode . lsp-ui-mode)))
+
 
 (use-package lsp-treemacs)
 
@@ -787,7 +808,8 @@
   :straight (notmuch-x :host github :repo "bcardoso/notmuch-x")
   :after notmuch
   :custom
-  (notmuch-x--indicator-timer-update-interval 300)
+  (notmuch-x--auto-update nil)
+  ;; (notmuch-x--indicator-timer-update-interval 300)
   :bind (("C-c m"            . notmuch-x-run-notmuch)
          ("C-c M"            . notmuch-x-update-dwim)
          ("C-x m"            . notmuch-mua-new-mail)
@@ -818,7 +840,7 @@
                ("i"          . sorend/notmuch-tag-inbox)
                ("d"          . sorend/notmuch-tag-trash)))
   :config
-  (setq notmuch-x--update-timer t)
+  ;; (setq notmuch-x--update-timer t)
   (defun sorend/notmuch-tag-toggle-unread ()
     "Toggle 'unread' tag."
     (interactive)
