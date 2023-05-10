@@ -1,22 +1,30 @@
 ;; init.el --- Emacs configuration
 
-;; for work (only at work I use windows)
-(if (string-equal system-type "windows-nt")
+;; conditional for laptop or not
+(setq is-mine? (string= system-name 'rebala))
+(setq is-bankdata? (string= system-type 'windows-nt))
+(message (format "is-mine? %s  is-bankdata?" is-mine? is-bankdata?))
+
+;; proxy at bankdata
+(if is-bankdata?
     (setq url-proxy-services
           '(("no_proxy" . "\\(localhost\\|bdpnet.dk\\|bdunet.dk\\)")
             ("http" . "httpproxy.bdpnet.dk:8080")
             ("https" . "httpproxy.bdpnet.dk:8080"))))
 
-;; straight setup
+;; use develop because emacs29 fix is not in master yet
+(setq straight-repository-branch "develop")
+
+;; Install straight.el
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
+      (bootstrap-version 6))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
+	(url-retrieve-synchronously
+	 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+	 'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
@@ -39,7 +47,10 @@
   ;; Grow and shrink the Vertico minibuffer
   ;; (setq vertico-resize t)
   ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
-  ;; (setq vertico-cycle t)
+  (setq vertico-cycle t)
+  :bind (:map vertico-map
+			  ("C-j" . vertico-next)
+			  ("C-k" . vertico-previous))
   )
 
 ;; Persist history over Emacs restarts. Vertico sorts by history position.
@@ -50,66 +61,65 @@
 (use-package emacs
   :straight (:type built-in)
   :config
-  (progn
-    (when (window-system)
-      (menu-bar-mode -1)
-      (tool-bar-mode -1)
-      (scroll-bar-mode -1)
-      (setq-default fram-title-format '("Emacs " emacs-version)))
+  (when (window-system)
+    (menu-bar-mode -1)
+    (tool-bar-mode -1)
+    (scroll-bar-mode -1)
+    (setq-default fram-title-format '("Emacs " emacs-version)))
 
-    (recentf-mode 1)
-    (add-to-list 'default-frame-alist '(font . "JetBrains Mono-14"))
-    ;; (add-to-list 'default-frame-alist '(line-spacing . 0.2))
+  (recentf-mode 1)
+  (add-to-list 'default-frame-alist '(font . "JetBrains Mono-14"))
+  ;; (add-to-list 'default-frame-alist '(line-spacing . 0.2))
 
-    (when (string-equal system-name "rebala") ;; for laptop
-      (set-face-attribute 'default nil :height 125))
+  (when (string-equal system-name "rebala") ;; for laptop
+    (set-face-attribute 'default nil :height 125))
 
-    (toggle-frame-maximized)
-    (setq inhibit-splash-screen t)
-    (setq inhibit-startup-message t)
+  (toggle-frame-maximized)
+  (setq inhibit-splash-screen t)
+  (setq inhibit-startup-message t)
 
-    (setq gc-cons-threshold (* 256 1024 1024))
+  (setq gc-cons-threshold (* 256 1024 1024))
 
-    (windmove-default-keybindings)
-    (global-hl-line-mode)
-    (auto-fill-mode -1)
-    (global-display-line-numbers-mode 1)
+  (windmove-default-keybindings)
+  (global-hl-line-mode)
+  (auto-fill-mode -1)
+  (global-display-line-numbers-mode 1)
 
-    (auth-source-pass-enable) ;; start auth source pass
-    (setq auth-source-debug t
-          auth-source-do-cache nil
-          auth-sources '(password-store))
+  (auth-source-pass-enable) ;; start auth source pass
+  (setq auth-source-debug t
+        auth-source-do-cache nil
+        auth-sources '(password-store))
 
-    ;; ediff
-    (setq ediff-split-window-function 'split-window-horizontally
-          ediff-diff-options "-w"
-          ediff-window-setup-function 'ediff-setup-windows-plain)
+  ;; ediff
+  (setq ediff-split-window-function 'split-window-horizontally
+        ediff-diff-options "-w"
+        ediff-window-setup-function 'ediff-setup-windows-plain)
 
-    ;; diable warnings
-    (setq warning-minimum-level :error)
+  ;; diable warnings
+  (setq warning-minimum-level :error)
 
-    (setq inhibit-startup-message t)
-    (setq-default c-basic-offset 4
-                  indent-tabs-mode nil
-                  tab-width 4
-                  display-time-24hr-format t
-                  completion-cycle-threshold 3
-                  tab-always-indent 'complete)
+  (setq inhibit-startup-message t)
+  (setq-default c-basic-offset 4
+                indent-tabs-mode nil
+                tab-width 4
+                display-time-24hr-format t
+                completion-cycle-threshold 3
+                tab-always-indent 'complete)
 
-    (add-hook 'before-save-hook 'delete-trailing-whitespace)
-    (remove-hook 'text-mode-hook #'turn-on-auto-fill)
-    ;; refresh whee
-    (global-set-key (kbd "<f5>") 'revert-buffer)
-    ;; theme
-    (load-theme 'modus-vivendi t)
-    ;; (load-theme 'modus-operandi t)
-    (setq modus-themes-org-blocks 'tinted)
-    ;; yes/no -> y/n
-    (defalias 'yes-or-no-p 'y-or-n-p)
-    (setq revert-without-query '(".*pdf$"))
-    ;; display time mode on
-    ;; (display-time-mode 1)
-    ))
+  (add-hook 'before-save-hook 'delete-trailing-whitespace)
+  (remove-hook 'text-mode-hook #'turn-on-auto-fill)
+  ;; refresh whee
+  (global-set-key (kbd "<f5>") 'revert-buffer)
+  ;; theme
+  (load-theme 'modus-vivendi t)
+  ;; (load-theme 'modus-operandi t)
+  (setq modus-themes-org-blocks 'tinted)
+  ;; yes/no -> y/n
+  (defalias 'yes-or-no-p 'y-or-n-p)
+  (setq revert-without-query '(".*pdf$"))
+  ;; display time mode on
+  ;; (display-time-mode 1)
+  )
 
 ;; Optionally use the `orderless' completion style.
 (use-package orderless
@@ -121,11 +131,16 @@
         completion-category-defaults nil
         completion-category-overrides '((file (styles partial-completion)))))
 
+;; marginalia shows documentation while completing
 (use-package marginalia
+  :straight t
+  :after vertico
   :config
   (marginalia-mode))
 
 (use-package embark
+  :straight t
+  :after vertico
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
    ("C-;" . embark-dwim)        ;; good alternative: M-.
@@ -150,47 +165,55 @@
   (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package consult
-  :demand t
+  :straight t
+  :after vertico
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
-         ("C-c h" . consult-history)
-         ("C-c m" . consult-mode-command)
-         ("C-c k" . consult-kmacro)
-         ;; C-x bindings (ctl-x-map)
-         ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-         ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-         ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-         ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
-         ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
-         ;; Custom M-# bindings for fast register access
-         ("M-#" . consult-register-load)
-         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-         ("C-M-#" . consult-register)
-         ;; Other custom bindings
-         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-         ("<help> a" . consult-apropos)            ;; orig. apropos-command
-         ;; M-g bindings (goto-map)
-         ("M-g e" . consult-compile-error)
-         ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
-         ("M-g g" . consult-goto-line)             ;; orig. goto-line
-         ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-         ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-         ("M-g m" . consult-mark)
-         ("M-g k" . consult-global-mark)
-         ("M-g i" . consult-imenu)
-         ("M-g I" . consult-imenu-multi)
-         ;; M-s bindings (search-map)
-         ("M-s d" . consult-find)
-         ("M-s D" . consult-locate)
-         ("M-s g" . consult-grep)
-         ("M-s G" . consult-git-grep)
-         ("M-s r" . consult-ripgrep)
-         ("M-s l" . consult-line)
-         ("M-s L" . consult-line-multi)
-         ("M-s m" . consult-multi-occur)
-         ("M-s k" . consult-keep-lines)
-         ("M-s u" . consult-focus-lines)
+         ([remap yank-pop] . consult-yank-pop)
+         ([remap yank] . consult-yank-pop)
+         ([remap isearch-forward] . consult-line)
+         ([remap switch-to-buffer] . consult-buffer)
+         ([remap goto-line] . consult-goto-line)
+         ([remap ibuffer] . consult-buffer)
+         ;; ("C-c h" . consult-history)
+         ;; ("C-c m" . consult-mode-command)
+         ;; ("C-c k" . consult-kmacro)
+         ;; ;; C-x bindings (ctl-x-map)
+         ;; ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+         ;; ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+         ;; ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+         ;; ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+         ;; ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+         ;; ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+         ;; ;; Custom M-# bindings for fast register access
+         ;; ("M-#" . consult-register-load)
+         ;; ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+         ;; ("C-M-#" . consult-register)
+         ;; ;; Other custom bindings
+         ;; ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+         ;; ("<help> a" . consult-apropos)            ;; orig. apropos-command
+         ;; ;; M-g bindings (goto-map)
+         ;; ("M-g e" . consult-compile-error)
+         ;; ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+         ;; ("M-g g" . consult-goto-line)             ;; orig. goto-line
+         ;; ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+         ;; ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+         ;; ("M-g m" . consult-mark)
+         ;; ("M-g k" . consult-global-mark)
+         ;; ("M-g i" . consult-imenu)
+         ;; ("M-g I" . consult-imenu-multi)
+         ;; ;; M-s bindings (search-map)
+         ;; ("M-s d" . consult-find)
+         ;; ("M-s D" . consult-locate)
+         ;; ("M-s g" . consult-grep)
+         ;; ("M-s G" . consult-git-grep)
+         ;; ("M-s r" . consult-ripgrep)
+         ;; ("M-s l" . consult-line)
+         ;; ("M-s L" . consult-line-multi)
+         ;; ("M-s m" . consult-multi-occur)
+         ;; ("M-s k" . consult-keep-lines)
+         ;; ("M-s u" . consult-focus-lines)
+         ("C-f" . consult-ripgrep)
          ;; Isearch integration
          ("M-s e" . consult-isearch-history)
          :map isearch-mode-map
@@ -202,7 +225,6 @@
          :map minibuffer-local-map
          ("M-s" . consult-history)                 ;; orig. next-matching-history-element
          ("M-r" . consult-history))
-
 
   ;; Enable automatic preview at point in the *Completions* buffer. This is
   ;; relevant when you use the default completion UI.
@@ -237,13 +259,12 @@
   ;; For some commands and buffer sources it is useful to configure the
   ;; :preview-key on a per-command basis using the `consult-customize' macro.
   (consult-customize
-   consult-theme
-   :preview-key '(:debounce 0.2 any)
+   consult-theme :preview-key '(:debounce 0.2 any)
    consult-ripgrep consult-git-grep consult-grep
    consult-bookmark consult-recent-file consult-xref
-   consult--source-bookmark consult--source-recent-file
-   consult--source-project-recent-file
-   :preview-key (kbd "M-."))
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
+   :preview-key '(:debounce 0.4 any))
 
   ;; Optionally configure the narrowing key.
   ;; Both < and C-+ work reasonably well.
@@ -302,7 +323,6 @@
   (global-corfu-mode))
 
 
-
 ;; search improvement
 (use-package ctrlf
   :config
@@ -312,21 +332,9 @@
   :hook
   (prog-mode . rainbow-delimiters-mode))
 
-;; disable for now, use project.el (use-package projectile)
-
-;; automatically update packages every 7 days
-(use-package auto-package-update
-  :demand t
-  :custom
-  (auto-package-update-delete-old-versions t)
-  (auto-package-update-hide-results t)
-  :config
-  (auto-package-update-maybe))
-
-
 ;; setup tramp
 (use-package tramp
-  :defer t
+  :straight (:type built-in)
   :config
   (setq tramp-default-method "ssh"
         tramp-auto-save-directory "~/.emacs.d/tramp-autosave-dir"
@@ -352,8 +360,6 @@
       (make-directory ext-dir t)
       (cl-loop for fn in ext-files do (sorend/copy-cfg-file fn ext-dir-full)))))
 
-
-
 ;;
 ;; Multiple cursors
 ;;
@@ -363,6 +369,21 @@
    ("C-c C-<down>" . mc/mark-next-like-this)
    ("C-c C-<up>" . mc/mark-previous-like-this)
    ("C-c C-<right>" . mc/mark-all-like-this)))
+
+;;
+;; Flymake configuration
+;;
+(use-package flymake
+  :straight (:type built-in)
+  :bind
+  (("C-c C-1 n" . flymake-goto-next-error)
+   ("C-c C-1 p" . flymake-goto-prev-error)))
+
+(use-package flymake-ruff
+  :straight (flymake-ruff
+             :type git
+             :host github
+             :repo "erickgnavar/flymake-ruff"))
 
 ;;
 ;; magit configuation
@@ -393,154 +414,114 @@
     (add-to-list 'exec-path-from-shell-variables shell-variable))
   (exec-path-from-shell-initialize))
 
-
-;; (use-package flycheck
-;;   :requires helm-flycheck flycheck-pycheckers flycheck-inline
-;;   :config
-;;   (flycheck-inline-mode)
-;;   )
-
-(use-package flycheck-inline)
-
-(use-package flycheck
-  :after flycheck-inline
+;;
+;; Use tree-sitter mode instead of "normal" mode
+;;
+(use-package treesit-auto
   :config
-  (flycheck-inline-mode))
+  (global-treesit-auto-mode))
 
-;; (use-package flycheck-inline)
 
-;; ;; Requires local dependencies:
-;; ;;   pip install flake8 bandit
-;; (use-package flycheck-pycheckers
-;;   :config
-;;   (setq flycheck-pycheckers-checkers '(flake8 bandit)
-;;         flycheck-pycheckers-ignore-codes
-;;         '("C0411" "C0413" "C0103" "C0111" "W0142" "W0201" "W0232" "W0403" "W0511" "E1002" "E1101"
-;;           "E1103" "R0201" "R0801" "R0903" "R0904" "R0914" "W503" "W504"
-;;           ;; flake8
-;;           "E111" "E114" "E121" "E126" "E127" "E221" "E241" "E302" "E305"
-;;           ;; bandit
-;;           "B101" "B322")
-;;         flycheck-pycheckers-max-line-length 180
-;;         flycheck-pycheckers-multi-thread "true")
+(use-package ledger-mode)
 
-;;   (add-hook 'flycheck-mode-hook #'flycheck-pycheckers-setup)
+(use-package beancount
+  :straight (beancount-mode
+             :type git
+             :host github
+             :repo "beancount/beancount-mode"))
 
-;;   ;; Ensure that the correct python checker is chosen.
-;;   (add-hook 'python-mode-hook (lambda () (flycheck-select-checker 'python-pycheckers))))
+
+
+
 
 
 ;;
 ;; rust programming
 ;;
-(use-package rustic
-  :bind (:map rustic-mode-map
-              ("M-j" . lsp-ui-imenu)
-              ("M-?" . lsp-find-references)
-              ("C-c C-c l" . flycheck-list-errors)
-              ("C-c C-c a" . lsp-execute-code-action)
-              ("C-c C-c r" . lsp-rename)
-              ("C-c C-c q" . lsp-workspace-restart)
-              ("C-c C-c Q" . lsp-workspace-shutdown)
-              ("C-c C-c s" . lsp-rust-analyzer-status)
-              ("C-c C-c e" . lsp-rust-analyzer-expand-macro)
-              ("C-c C-c d" . dap-hydra)
-              ("C-c C-c h" . lsp-ui-doc-glance))
+(use-package rust-mode
   :config
   ;; uncomment for less flashiness
   ;; (setq lsp-eldoc-hook nil)
   ;; (setq lsp-enable-symbol-highlighting nil)
   ;; (setq lsp-signature-auto-activate nil)
-
-  ;; comment to disable rustfmt on save
-  (add-hook 'rustic-mode-hook 'sorend/rustic-mode-hook))
-
-(defun sorend/rustic-mode-hook ()
-  ;; so that run C-c C-c C-r works without having to confirm, but don't try to
-  ;; save rust buffers that are not file visiting. Once
-  ;; https://github.com/brotzeit/rustic/issues/253 has been resolved this should
-  ;; no longer be necessary.
-  (when buffer-file-name
-    (setq-local buffer-save-without-query t))
-  (add-hook 'before-save-hook 'lsp-format-buffer nil t))
-
+  (add-hook 'rust-mode-hook 'eglot-ensure))
 
 
 ;;
 ;; lsp mode
 ;;
 
-(use-package lsp-mode
-  :after which-key
-  :config
-  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-  (setq lsp-keymap-prefix "C-c l"
-        lsp-enable-symbol-highlighting t
-        lsp-enable-snippet nil)
-  (setq lsp-pylsp-plugins-flake8-enabled t
-        lsp-pylsp-plugins-jedi-completion-enabled t
-        lsp-pylsp-plugins-pycodestyle-enabled t
-        lsp-pylsp-plugins-pydocstyle-enabled t
-        lsp-pylsp-plugins-jedi-use-pyenv-environment t
-        lsp-pylsp-plugins-pyflakes-enabled t)
-  (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
-  (lsp-enable-which-key-integration t)
-  :custom
-  (lsp-diagnostic-package :flycheck)
-  (lsp-prefer-capf t)
-  (read-process-output-max (* 1024 1024))
-  ;; what to use when checking on-save. "check" is default, I prefer clippy
-  (lsp-rust-analyzer-cargo-watch-command "clippy")
-  (lsp-eldoc-render-all t)
-  (lsp-idle-delay 0.6)
-  ;; This controls the overlays that display type and other hints inline. Enable
-  ;; / disable as you prefer. Well require a `lsp-workspace-restart' to have an
-  ;; effect on open projects.
-  (lsp-rust-analyzer-server-display-inlay-hints t)
-  (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
-  (lsp-rust-analyzer-display-chaining-hints t)
-  (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
-  (lsp-rust-analyzer-display-closure-return-type-hints t)
-  (lsp-rust-analyzer-display-parameter-hints nil)
-  (lsp-rust-analyzer-display-reborrow-hints nil)
-  :hook
-  ((go-mode python-mode) . lsp)
-  :commands
-  (lsp lsp-deferred))
+;; (use-package lsp-mode
+;;   :after which-key
+;;   :config
+;;   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+;;   (setq lsp-keymap-prefix "C-c l"
+;;         lsp-enable-symbol-highlighting t
+;;         lsp-enable-snippet nil)
+;;   (setq lsp-pylsp-plugins-flake8-enabled t
+;;         lsp-pylsp-plugins-jedi-completion-enabled t
+;;         lsp-pylsp-plugins-pycodestyle-enabled t
+;;         lsp-pylsp-plugins-pydocstyle-enabled t
+;;         lsp-pylsp-plugins-jedi-use-pyenv-environment t
+;;         lsp-pylsp-plugins-pyflakes-enabled t)
+;;   (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
+;;   (lsp-enable-which-key-integration t)
+;;   :custom
+;;   (lsp-diagnostic-package :flycheck)
+;;   (lsp-prefer-capf t)
+;;   (read-process-output-max (* 1024 1024))
+;;   ;; what to use when checking on-save. "check" is default, I prefer clippy
+;;   (lsp-rust-analyzer-cargo-watch-command "clippy")
+;;   (lsp-eldoc-render-all t)
+;;   (lsp-idle-delay 0.6)
+;;   ;; This controls the overlays that display type and other hints inline. Enable
+;;   ;; / disable as you prefer. Well require a `lsp-workspace-restart' to have an
+;;   ;; effect on open projects.
+;;   (lsp-rust-analyzer-server-display-inlay-hints t)
+;;   (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
+;;   (lsp-rust-analyzer-display-chaining-hints t)
+;;   (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
+;;   (lsp-rust-analyzer-display-closure-return-type-hints t)
+;;   (lsp-rust-analyzer-display-parameter-hints nil)
+;;   (lsp-rust-analyzer-display-reborrow-hints nil)
+;;   :hook
+;;   ((go-mode python-ts-mode) . lsp)
+;;   :commands
+;;   (lsp lsp-deferred))
 
-;; optionally
-(use-package lsp-ui
-  :requires lsp-mode
-  :commands lsp-ui-mode
-  :custom
-  (lsp-enable-symbol-highlighting t)
-  (lsp-ui-doc-enable t)
-  (lsp-ui-doc-use-childframe t)
-  (lsp-ui-doc-position 'top)
-  (lsp-ui-doc-include-signature t)
-  (lsp-ui-sideline-enable t)
-  (lsp-ui-flycheck-enable t)
-  (lsp-ui-flycheck-list-position 'right)
-  (lsp-ui-flycheck-live-reporting t)
-  (lsp-ui-peek-enable nil)
-  (lsp-ui-peek-list-width 60)
-  (lsp-ui-peek-peek-height 25)
-  (lsp-lens-enable t)
-  (lsp-headerline-breadcrumb-enable t)
-  (lsp-modeline-code-actions-enable t)
-  (lsp-eldoc-enable-hover t)
-  (lsp-signature-auto-activate t)
-  (lsp-modeline-diagnostics-enable t)
-  (lsp-signature-render-documentation t)
-  (lsp-completion-provider :capf)
-  (lsp-completion-show-detail t)
-  (lsp-completion-show-kind t)
-  :config
-  :hook
-  ((lsp-mode . lsp-ui-mode)))
+;; ;; optionally
+;; (use-package lsp-ui
+;;   :requires lsp-mode
+;;   :commands lsp-ui-mode
+;;   :custom
+;;   (lsp-enable-symbol-highlighting t)
+;;   (lsp-ui-doc-enable t)
+;;   (lsp-ui-doc-use-childframe t)
+;;   (lsp-ui-doc-position 'top)
+;;   (lsp-ui-doc-include-signature t)
+;;   (lsp-ui-sideline-enable t)
+;;   (lsp-ui-flycheck-enable t)
+;;   (lsp-ui-flycheck-list-position 'right)
+;;   (lsp-ui-flycheck-live-reporting t)
+;;   (lsp-ui-peek-enable nil)
+;;   (lsp-ui-peek-list-width 60)
+;;   (lsp-ui-peek-peek-height 25)
+;;   (lsp-lens-enable t)
+;;   (lsp-headerline-breadcrumb-enable t)
+;;   (lsp-modeline-code-actions-enable t)
+;;   (lsp-eldoc-enable-hover t)
+;;   (lsp-signature-auto-activate t)
+;;   (lsp-modeline-diagnostics-enable t)
+;;   (lsp-signature-render-documentation t)
+;;   (lsp-completion-provider :capf)
+;;   (lsp-completion-show-detail t)
+;;   (lsp-completion-show-kind t)
+;;   :config
+;;   :hook
+;;   ((lsp-mode . lsp-ui-mode)))
 
 
-(use-package lsp-treemacs)
+;; (use-package lsp-treemacs)
 
 ;; optional if you want which-key integration
 (use-package which-key
@@ -550,24 +531,16 @@
     (setq which-key-idle-secondary-delay 0.05)
     (which-key-mode))
 
-;;
-;; Python configuration
-;;
-(use-package lsp-pyright
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-pyright)
-                         (lsp))))  ; or lsp-deferred
-
-(use-package python-mode
-  :after (lsp-mode)
-  :hook
-  ((python-mode . lsp-deferred)
-   (before-save . lsp-format-buffer)
-   (before-save . lsp-organize-imports))
-  :config
-  ;; keybindings
-  ;; (add-to-list 'lsp-enabled-clients 'pylsp))
-  )
+;; (use-package python-ts-mode
+;;   :straight (:type built-in)
+;;   :hook
+;;   ;; ((python-ts-mode . lsp-deferred)
+;;   ;;  (before-save . lsp-format-buffer)
+;;   ;;  (before-save . lsp-organize-imports))
+;;   :config
+;;   ;; keybindings
+;;   ;; (add-to-list 'lsp-enabled-clients 'pylsp))
+;;   )
 
 (use-package pyenv-mode)
 
@@ -585,12 +558,6 @@
   :config
   ;; (which-key-declare-prefixes-for-mode 'python-mode "SPC pt" "Testing"))
   )
-
-;;(use-package cl-1.0)
-;;(use-package poetry
-;;  :ensure t)
-
-
 
 ;;
 ;; Misc file editing modes
@@ -746,10 +713,7 @@
   (("C-x C-t" . vterm)))
 
 ;; dired
-(use-package dired
-  :straight (:type built-in)
-  :bind
-  (("C-x C-j" . dired-jump)))
+(straight-use-package 'dirvish)
 
 (use-package all-the-icons-dired
   :if (display-graphic-p)
@@ -759,10 +723,18 @@
 (use-package dired-single
   :after dired)
 
+
+;;
+;;
+;;
+
+
 ;;
 ;; Email configuration
 ;;
 ;;
+
+(when (string= system-name "rebala")
 
 ;; put notmuch files in place
 (sorend/setup-external "~/Mail/.notmuch/hooks/" "pre-new" "post-new")
@@ -915,7 +887,7 @@
     "Tag selected message(s) as 'inbox'."
     (interactive)
     (notmuch-x-tag-dwim '("-inbox" "+spam")))
-  
+
   (defun sorend/notmuch-tag-trash ()
     "Tag selected message(s) as 'trash'."
     (interactive)
@@ -1038,6 +1010,7 @@
   :no-require
   :config (citar-embark-mode))
 
+)
 
 ;;
 ;; notebooks
