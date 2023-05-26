@@ -407,12 +407,14 @@
   :hook
   (after-init . global-emojify-mode))
 
-(use-package exec-path-from-shell
-  :config
-  (dolist (shell-variable '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "BROWSER" "CI"
-                            "GOPATH" "LANG" "MANPATH" "PATH"))
-    (add-to-list 'exec-path-from-shell-variables shell-variable))
-  (exec-path-from-shell-initialize))
+
+(when (string-equal system-type "gnu/linux")
+  (use-package exec-path-from-shell
+    :config
+    (dolist (shell-variable '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "BROWSER" "CI"
+                              "GOPATH" "LANG" "MANPATH" "PATH"))
+      (add-to-list 'exec-path-from-shell-variables shell-variable))
+    (exec-path-from-shell-initialize)))
 
 ;;
 ;; Use tree-sitter mode instead of "normal" mode
