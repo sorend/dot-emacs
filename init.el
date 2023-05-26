@@ -71,7 +71,7 @@
   (add-to-list 'default-frame-alist '(font . "JetBrains Mono-14"))
   ;; (add-to-list 'default-frame-alist '(line-spacing . 0.2))
 
-  (when (string-equal system-name "rebala") ;; for laptop
+  (when is-mine? ;; for laptop
     (set-face-attribute 'default nil :height 125))
 
   (toggle-frame-maximized)
@@ -397,6 +397,27 @@
   (setq magit-display-buffer-function
         'magit-display-buffer-fullframe-status-v1))
 
+(when is-bankdata?
+  ;; keychains
+  (defun sorend/keychain-file-contents (filename)
+    "Return the contents of FILENAME."
+    (with-temp-buffer
+      (insert-file-contents filename)
+      (buffer-string)))
+
+  (defun sorend/keychain-refresh-environment ()
+    (interactive)
+    (let* ((ssh (sorend/keychain-file-contents (car (file-expand-wildcards "~/.keychain/*-sh" t)))))
+      (list (and ssh
+                 (string-match "SSH_AUTH_SOCK[=\s]\\([^\s;\n]*\\)" ssh)
+                 (setenv       "SSH_AUTH_SOCK" (match-string 1 ssh)))
+            (and ssh
+                 (string-match "SSH_AGENT_PID[=\s]\\([0-9]*\\)?" ssh)
+                 (setenv       "SSH_AGENT_PID" (match-string 1 ssh))))))
+
+  (sorend/keychain-refresh-environment))
+
+
 ;; (use consult-git-grep instead M-s-G)
 ;; (use-package magit-find-file
 ;;   :bind ("C-c p" . magit-find-file-completing-read))
@@ -652,7 +673,7 @@
 ;;
 ;;
 
-(when (string= system-name "rebala")
+(when is-mine?
 
 ;; put notmuch files in place
 (sorend/setup-external "~/Mail/.notmuch/hooks/" "pre-new" "post-new")
