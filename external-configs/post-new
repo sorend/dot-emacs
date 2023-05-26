@@ -50,7 +50,8 @@ notmuch tag -inbox -new +newsletter -- from:"Black by ClearTax" and tag:new
 notmuch tag -inbox -new +newsletter -- from:"OLA Electric" and tag:new
 notmuch tag -inbox -new +newsletter -- from:webinars@securityboulevard.com and tag:new
 notmuch tag -inbox -new +newsletter -- from:english-personalized-digest@quora.com and tag:new
-
+notmuch tag -inbox -new +newsletter -- from:noreply@digest.groww.in and tag:new
+notmuch tag -inbox -new +newsletter -- from:invest@marketing.shriramfinance.in and tag:new
 
 # otp marking
 notmuch tag +otp -- from:/bank/ and subject:/OTP/ and tag:new
