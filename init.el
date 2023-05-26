@@ -421,6 +421,16 @@
   :config
   (global-treesit-auto-mode))
 
+;; lsp
+(use-package eglot
+  :bind (:map eglot-mode-map
+              ("C-c a r" . #'eglot-rename)
+              ("C-<down-mouse-1>" . #'xref-find-definitions)
+              ("C-S-<down-mouse-1>" . #'xref-find-references)
+              ("C-c C-c" . #'eglot-code-actions))
+  :custom
+  (eglot-autoshutdown t))
+
 
 (use-package ledger-mode)
 
@@ -431,97 +441,14 @@
              :repo "beancount/beancount-mode"))
 
 
-
-
-
-
 ;;
 ;; rust programming
 ;;
 (use-package rust-mode
-  :config
-  ;; uncomment for less flashiness
-  ;; (setq lsp-eldoc-hook nil)
-  ;; (setq lsp-enable-symbol-highlighting nil)
-  ;; (setq lsp-signature-auto-activate nil)
-  (add-hook 'rust-mode-hook 'eglot-ensure))
+  :init
+  (add-hook 'rust-mode-hook 'eglot-ensure)
+  (add-hook 'rust-ts-mode-hook 'eglot-ensure))
 
-
-;;
-;; lsp mode
-;;
-
-;; (use-package lsp-mode
-;;   :after which-key
-;;   :config
-;;   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-;;   (setq lsp-keymap-prefix "C-c l"
-;;         lsp-enable-symbol-highlighting t
-;;         lsp-enable-snippet nil)
-;;   (setq lsp-pylsp-plugins-flake8-enabled t
-;;         lsp-pylsp-plugins-jedi-completion-enabled t
-;;         lsp-pylsp-plugins-pycodestyle-enabled t
-;;         lsp-pylsp-plugins-pydocstyle-enabled t
-;;         lsp-pylsp-plugins-jedi-use-pyenv-environment t
-;;         lsp-pylsp-plugins-pyflakes-enabled t)
-;;   (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
-;;   (lsp-enable-which-key-integration t)
-;;   :custom
-;;   (lsp-diagnostic-package :flycheck)
-;;   (lsp-prefer-capf t)
-;;   (read-process-output-max (* 1024 1024))
-;;   ;; what to use when checking on-save. "check" is default, I prefer clippy
-;;   (lsp-rust-analyzer-cargo-watch-command "clippy")
-;;   (lsp-eldoc-render-all t)
-;;   (lsp-idle-delay 0.6)
-;;   ;; This controls the overlays that display type and other hints inline. Enable
-;;   ;; / disable as you prefer. Well require a `lsp-workspace-restart' to have an
-;;   ;; effect on open projects.
-;;   (lsp-rust-analyzer-server-display-inlay-hints t)
-;;   (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
-;;   (lsp-rust-analyzer-display-chaining-hints t)
-;;   (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
-;;   (lsp-rust-analyzer-display-closure-return-type-hints t)
-;;   (lsp-rust-analyzer-display-parameter-hints nil)
-;;   (lsp-rust-analyzer-display-reborrow-hints nil)
-;;   :hook
-;;   ((go-mode python-ts-mode) . lsp)
-;;   :commands
-;;   (lsp lsp-deferred))
-
-;; ;; optionally
-;; (use-package lsp-ui
-;;   :requires lsp-mode
-;;   :commands lsp-ui-mode
-;;   :custom
-;;   (lsp-enable-symbol-highlighting t)
-;;   (lsp-ui-doc-enable t)
-;;   (lsp-ui-doc-use-childframe t)
-;;   (lsp-ui-doc-position 'top)
-;;   (lsp-ui-doc-include-signature t)
-;;   (lsp-ui-sideline-enable t)
-;;   (lsp-ui-flycheck-enable t)
-;;   (lsp-ui-flycheck-list-position 'right)
-;;   (lsp-ui-flycheck-live-reporting t)
-;;   (lsp-ui-peek-enable nil)
-;;   (lsp-ui-peek-list-width 60)
-;;   (lsp-ui-peek-peek-height 25)
-;;   (lsp-lens-enable t)
-;;   (lsp-headerline-breadcrumb-enable t)
-;;   (lsp-modeline-code-actions-enable t)
-;;   (lsp-eldoc-enable-hover t)
-;;   (lsp-signature-auto-activate t)
-;;   (lsp-modeline-diagnostics-enable t)
-;;   (lsp-signature-render-documentation t)
-;;   (lsp-completion-provider :capf)
-;;   (lsp-completion-show-detail t)
-;;   (lsp-completion-show-kind t)
-;;   :config
-;;   :hook
-;;   ((lsp-mode . lsp-ui-mode)))
-
-
-;; (use-package lsp-treemacs)
 
 ;; optional if you want which-key integration
 (use-package which-key
@@ -530,17 +457,6 @@
     (setq which-key-idle-delay 3)
     (setq which-key-idle-secondary-delay 0.05)
     (which-key-mode))
-
-;; (use-package python-ts-mode
-;;   :straight (:type built-in)
-;;   :hook
-;;   ;; ((python-ts-mode . lsp-deferred)
-;;   ;;  (before-save . lsp-format-buffer)
-;;   ;;  (before-save . lsp-organize-imports))
-;;   :config
-;;   ;; keybindings
-;;   ;; (add-to-list 'lsp-enabled-clients 'pylsp))
-;;   )
 
 (use-package pyenv-mode)
 
