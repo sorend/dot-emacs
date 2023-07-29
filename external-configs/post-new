@@ -63,6 +63,8 @@ notmuch tag -inbox -new +trash -- from:scholarcitations-noreply@google.com and '
 notmuch tag -inbox -new +trash -- from:billing@mitsu.in and tag:new
 notmuch tag -inbox -new +trash -- from:familysafety@microsoft.com and 'subject:"/have more screen time/"' and tag:new
 notmuch tag -inbox -new +trash -- from:no-reply@researchgatemai and 'subject:"Soren, people are reading your work"' and tag:new
+notmuch tag -inbox -new +trash -- from:noreply@steampowered.com and "subject:'/You have sold an item/'" and tag:new
+notmuch tag -inbox -new +trash -- "subject:'/^Thank you for your recent purchase/'" and from:noreply@@steampowered.com
 
 
 # tag inbox (for those in inbox)
