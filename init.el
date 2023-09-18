@@ -3,14 +3,14 @@
 ;; conditional for laptop or not
 (setq is-mine? (string= system-name 'rebala))
 (setq is-bankdata? (string= system-type 'windows-nt))
-(message (format "is-mine? %s  is-bankdata?" is-mine? is-bankdata?))
+(message (format "is-mine? %s  is-bankdata? %s" is-mine? is-bankdata?))
 
 ;; proxy at bankdata
-(if is-bankdata?
-    (setq url-proxy-services
-          '(("no_proxy" . "\\(localhost\\|bdpnet.dk\\|bdunet.dk\\)")
-            ("http" . "httpproxy.bdpnet.dk:8080")
-            ("https" . "httpproxy.bdpnet.dk:8080"))))
+;;(if is-bankdata?
+;;    (setq url-proxy-services
+;;          '(("no_proxy" . "\\(localhost\\|bdpnet.dk\\|bdunet.dk\\)")
+;;            ("http" . "httpproxy.bdpnet.dk:8080")
+;;            ("https" . "httpproxy.bdpnet.dk:8080"))))
 
 ;; use develop because emacs29 fix is not in master yet
 (setq straight-repository-branch "develop")
@@ -68,10 +68,12 @@
     (setq-default fram-title-format '("Emacs " emacs-version)))
 
   (recentf-mode 1)
-  (add-to-list 'default-frame-alist '(font . "JetBrains Mono-14"))
+  (add-to-list 'default-frame-alist '(font . "iosevka-15"))
   ;; (add-to-list 'default-frame-alist '(line-spacing . 0.2))
 
   (when is-mine? ;; for laptop
+    (set-face-attribute 'default nil :height 125))
+  (when is-bankdata?
     (set-face-attribute 'default nil :height 125))
 
   (toggle-frame-maximized)
@@ -170,7 +172,7 @@
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
          ([remap yank-pop] . consult-yank-pop)
-         ([remap yank] . consult-yank-pop)
+         ;; ([remap yank] . consult-yank-pop)
          ([remap isearch-forward] . consult-line)
          ([remap switch-to-buffer] . consult-buffer)
          ([remap goto-line] . consult-goto-line)
@@ -262,7 +264,7 @@
    consult-theme :preview-key '(:debounce 0.2 any)
    consult-ripgrep consult-git-grep consult-grep
    consult-bookmark consult-recent-file consult-xref
-   consult--source-bookmark consult--source-file-register
+   consult--source-bookmark ;; consult--source-file-register
    consult--source-recent-file consult--source-project-recent-file
    :preview-key '(:debounce 0.4 any))
 
@@ -449,6 +451,7 @@
 
 ;; spell checking
 (use-package jinx
+  :if is-mine?
   :hook (emacs-startup . global-jinx-mode)
   :bind (("M-$" . jinx-correct)
          ("C-M-l" . jinx-languages)))
@@ -487,6 +490,15 @@
   :init
   (add-hook 'rust-mode-hook 'eglot-ensure)
   (add-hook 'rust-ts-mode-hook 'eglot-ensure))
+
+;;
+;; Go programming
+;;
+(use-package go-mode
+  :init
+  (add-hook 'go-mode-hook #'eglot-ensure)
+  (add-hook 'go-ts-mode-hook #'eglot-ensure)
+  )
 
 
 ;; optional if you want which-key integration
@@ -535,6 +547,7 @@
 ;;
 
 (use-package pdf-tools
+  :if is-mine?
   :custom
   (pdf-view-display-size 'fit-page)
   (pdf-annot-activate-created-annotations t)
@@ -586,7 +599,6 @@
 	    TeX-view-program-selection '((output-pdf "PDF Tools"))
 		TeX-source-correlate-start-server t)
   (setq-default TeX-master "paper.tex")
-  (pdf-tools-install)
 	;; Update PDF buffers after successful LaTeX runs
   (add-hook 'TeX-after-compilation-finished-functions
 		    #'TeX-revert-document-buffer)
