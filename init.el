@@ -40,17 +40,11 @@
 (use-package vertico
   :init
   (vertico-mode)
-  ;; Different scroll margin
-  ;; (setq vertico-scroll-margin 0)
-  ;; Show more candidates
-  ;; (setq vertico-count 20)
-  ;; Grow and shrink the Vertico minibuffer
-  ;; (setq vertico-resize t)
-  ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
-  (setq vertico-cycle t)
-  :bind (:map vertico-map
-			  ("C-j" . vertico-next)
-			  ("C-k" . vertico-previous))
+  :custom
+  (vertico-cycle t)
+;;:bind (:map vertico-map
+;;			  ("C-j" . vertico-next)
+;;			  ("C-k" . vertico-previous))
   )
 
 ;; Persist history over Emacs restarts. Vertico sorts by history position.
@@ -308,16 +302,26 @@
   ;; TAB-and-Go customizations
   :custom
   (corfu-cycle t)             ;; Enable cycling for `corfu-next/previous'
-  (corfu-preselect-first nil) ;; Disable candidate preselection
-  ;; Use TAB for cycling, default is `corfu-complete'.
+  (corfu-auto t)
+  (corfu-auto-prefix 2)
+  (corfu-auto-delay 0.0)
+  (corfu-exit-at-boundary 'separator)
+  (corfu-echo-documentation 0.25)
+  (corfu-preview-current 'insert)
+  (corfu-preselect-first nil)
+    ;; Use TAB for cycling, default is `corfu-complete'.
   :bind
   (:map corfu-map
+        ("M-SPC" . corfu-insert-separator)
+        ("RET" . nil)
+        ("S-<return>" . corfu-insert)
         ("TAB" . corfu-next)
         ([tab] . corfu-next)
         ("S-TAB" . corfu-previous)
         ([backtab] . corfu-previous))
   :init
-  (global-corfu-mode))
+  (global-corfu-mode)
+  (corfu-history-mode))
 
 
 ;; search improvement
@@ -332,11 +336,11 @@
 ;; setup tramp
 (use-package tramp
   :straight (:type built-in)
-  :config
-  (setq tramp-default-method "ssh"
-        tramp-auto-save-directory "~/.emacs.d/tramp-autosave-dir"
-        password-cache-expiry 3600
-        recentf-keep '(file-remote-p file-readable-p)))
+  :custom
+  (tramp-default-method "ssh")
+  (tramp-auto-save-directory "~/.cache/tramp-autosave-dir")
+  (password-cache-expiry 3600)
+  (recentf-keep '(file-remote-p file-readable-p)))
 
 ;; setup ace-window
 (use-package ace-window
@@ -460,7 +464,10 @@
 ;; use tree-sitter mode instead of "normal" mode
 ;;
 (use-package treesit-auto
+  :custom
+  (treesit-auto-install 'prompt)
   :config
+  (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
 
 ;; lsp
@@ -911,6 +918,22 @@
     :after citar embark
     :no-require
     :config (citar-embark-mode)))
+
+(use-package calfw)
+
+(use-package calfw-ical
+  :after calfw
+  :config
+  (defun my-open-calendar ()
+    (interactive)
+    (cfw:open-calendar-buffer
+     :contents-sources
+     (list
+      (cfw:ical-create-source "DK" "https://www.officeholidays.com/ics/denmark" "IndianRed")
+      (cfw:ical-create-source "IN" "https://www.officeholidays.com/ics/india" "IndianRed")
+      ))))
+
+
 
 ;;
 ;; welcome startup

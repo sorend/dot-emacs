@@ -52,10 +52,31 @@ notmuch tag -inbox -new +newsletter -- from:webinars@securityboulevard.com and t
 notmuch tag -inbox -new +newsletter -- from:english-personalized-digest@quora.com and tag:new
 notmuch tag -inbox -new +newsletter -- from:noreply@digest.groww.in and tag:new
 notmuch tag -inbox -new +newsletter -- from:invest@marketing.shriramfinance.in and tag:new
+notmuch tag -inbox -new +newsletter -- from:projectsonmb@magicbricks.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:recos@magicbricks.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:propmb@magicbricks.com and tag:new
+notmuch tag -inbox -new +newsletter -- "from:*@magicbricks.com" and tag:new
+notmuch tag -inbox -new +newsletter -- "* at KUVERA <no-reply@kuvera.in>" and tag:new
+notmuch tag -inbox -new +newsletter -- from:mailers@marketing.goindigo.in and tag:new
+notmuch tag -inbix -new +newsletter -- from:info@nyheder.cancer.dk and tag:new
+notmuch tag -inbox -new +receipts -- "subject:'/Your Epic Games Receipt/'" and tag:new
+notmuch tag -inbox -new +newsletter -- from:noreply@dailydigest.groww.in and tag:new
+notmuch tag -inbox -new +newsletter -- from:newsletter@email.norwegianreward.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:update@intoday.in and tag:new
+notmuch tag -inbox -new +newsletter -- from:info@join.netflix.com and tag:new
+notmuch tag -inbox -new +newsletter -- from:team@logz.io and tag:new
+notmuch tag -inbox -new +newsletter -- from:info@peerberry.com and tag:new
+notmuch tag -inbox -new +newsletter -- "subject:NOTIFICATION FROM NSDL PAYMENTS BANK" and tag:new
+notmuch tag -inbox -new +newsletter -- from:hello@nobroker.in and tag:new
+
 
 # otp marking
 notmuch tag +otp -- from:/bank/ and subject:/OTP/ and tag:new
 notmuch tag +otp -- from:/microsoft.com/ and "subject:'/single-use code/'" and tag:new
+
+#
+notmuch tag +notification -- from:notifications@github.com and tag:new
+
 
 # direct to trash stuff
 notmuch tag -inbox -new +newsletter +trash -- from:premium@academia-mail.com and tag:new
