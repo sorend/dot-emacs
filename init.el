@@ -74,7 +74,13 @@
   (setq inhibit-splash-screen t)
   (setq inhibit-startup-message t)
 
+
+  ;; (setq garbage-collection-messages t)
   (setq gc-cons-threshold (* 256 1024 1024))
+  (add-function :after
+                after-focus-change-function
+                (lambda () (unless (frame-focus-state) (garbage-collect))))
+  ;; (add-function :after after-focus-change-function 'garbage-collect)
 
   (windmove-default-keybindings)
   (global-hl-line-mode)
@@ -116,6 +122,10 @@
   ;; display time mode on
   ;; (display-time-mode 1)
   )
+
+(use-package gcmh
+  :config
+  (gcmh-mode 1))
 
 ;; Optionally use the `orderless' completion style.
 (use-package orderless
@@ -291,7 +301,8 @@
 (use-package dash)
 
 (use-package better-defaults
-  :straight (:host nil :repo "https://git.sr.ht/~technomancy/better-defaults")
+  :straight (:host nil :repo "https://github.com/emacsmirror/better-defaults")
+;;  :straight (:host nil :repo "https://git.sr.ht/~technomancy/better-defaults")
   :config
   (setq backup-directory-alist
         `((".*" . ,temporary-file-directory)))
@@ -413,6 +424,28 @@
   :after dired)
 
 
+(defun wsl-copy-region-to-clipboard (start end)
+  "Copy region to Windows clipboard."
+  (interactive "r")
+  (call-process-region start end "clip.exe" nil 0))
+
+(defun wsl-clipboard-to-string ()
+  "Return Windows clipboard as string."
+  (let ((coding-system-for-read 'dos))
+    (substring				; remove added trailing \n
+     (shell-command-to-string
+      "powershell.exe -Command Get-Clipboard") 0 -1)))
+
+(defun wsl-paste-from-clipboard (arg)
+  "Insert Windows clipboard at point. With prefix ARG, also add to kill-ring"
+  (interactive "P")
+  (let ((clip (wsl-clipboard-to-string)))
+    (insert clip)
+    (if arg (kill-new clip))))
+
+
+(global-set-key (kbd "C-c r")  'rename-visited-file)
+
 (when is-bankdata?
   ;; keychains
   (defun sorend/keychain-file-contents (filename)
@@ -443,6 +476,10 @@
   (emojify-download-emojis-p t)
   :hook
   (after-init . global-emojify-mode))
+
+(use-package nyan-mode
+  :config
+  (nyan-mode))
 
 
 (when (string= system-type "gnu/linux")
