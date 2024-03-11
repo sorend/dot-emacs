@@ -15,6 +15,6 @@ notmuch tag -deleted -inbox +trash -- folder:mail and tag:deleted
 ( cd $HOME/Mail/ && gmi sync )
 
 # sync other imap
-mbsync -a -c $HOME/.emacs.d/external-configs/mbsync.conf
+mbsync -a -c $HOME/.config/mbsync/mbsync.conf
 
 # -*- mode: shell-script -*-

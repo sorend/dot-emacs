@@ -18,13 +18,16 @@
 ;; Install straight.el
 (defvar bootstrap-version)
 (let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
+       (expand-file-name
+        "straight/repos/straight.el/bootstrap.el"
+        (or (bound-and-true-p straight-base-dir)
+            user-emacs-directory)))
+      (bootstrap-version 7))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
-	(url-retrieve-synchronously
-	 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-	 'silent 'inhibit-cookies)
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
@@ -446,25 +449,25 @@
 
 (global-set-key (kbd "C-c r")  'rename-visited-file)
 
-(when is-bankdata?
-  ;; keychains
-  (defun sorend/keychain-file-contents (filename)
-    "Return the contents of FILENAME."
-    (with-temp-buffer
-      (insert-file-contents filename)
-      (buffer-string)))
+;; (when is-bankdata?
+;;   ;; keychains
+;;   (defun sorend/keychain-file-contents (filename)
+;;     "Return the contents of FILENAME."
+;;     (with-temp-buffer
+;;       (insert-file-contents filename)
+;;       (buffer-string)))
 
-  (defun sorend/keychain-refresh-environment ()
-    (interactive)
-    (let* ((ssh (sorend/keychain-file-contents (car (file-expand-wildcards "~/.keychain/*-sh" t)))))
-      (list (and ssh
-                 (string-match "SSH_AUTH_SOCK[=\s]\\([^\s;\n]*\\)" ssh)
-                 (setenv       "SSH_AUTH_SOCK" (match-string 1 ssh)))
-            (and ssh
-                 (string-match "SSH_AGENT_PID[=\s]\\([0-9]*\\)?" ssh)
-                 (setenv       "SSH_AGENT_PID" (match-string 1 ssh))))))
+;;   (defun sorend/keychain-refresh-environment ()
+;;     (interactive)
+;;     (let* ((ssh (sorend/keychain-file-contents (car (file-expand-wildcards "~/.keychain/*-sh" t)))))
+;;       (list (and ssh
+;;                  (string-match "SSH_AUTH_SOCK[=\s]\\([^\s;\n]*\\)" ssh)
+;;                  (setenv       "SSH_AUTH_SOCK" (match-string 1 ssh)))
+;;             (and ssh
+;;                  (string-match "SSH_AGENT_PID[=\s]\\([0-9]*\\)?" ssh)
+;;                  (setenv       "SSH_AGENT_PID" (match-string 1 ssh))))))
 
-  (sorend/keychain-refresh-environment))
+;;   (sorend/keychain-refresh-environment))
 
 
 ;; (use consult-git-grep instead M-s-G)
@@ -516,7 +519,6 @@
               ("C-c C-c" . #'eglot-code-actions))
   :custom
   (eglot-autoshutdown t))
-
 
 (use-package ledger-mode)
 
@@ -719,7 +721,7 @@
 
   ;; functions to setup
   (use-package notmuch
-    ;; :straight (:host github :repo "notmuch/notmuch")
+    :straight (:host github :repo "notmuch/notmuch")
     :after message gnus-alias
     :custom
     (notmuch-fcc-dirs '(("sorend@gmail.com" . nil)))
@@ -780,9 +782,9 @@
     :straight (notmuch-x :host github :repo "bcardoso/notmuch-x")
     :after notmuch
     :custom
-    (notmuch-x--auto-update nil)
-    ;; (notmuch-x--indicator-timer-update-interval 300)
-    :bind (("C-c m"            . notmuch-x-run-notmuch)
+    (notmuch-x-auto-update nil)
+    (notmuch-x-auto-update-mode nil)
+    :bind (("C-c m"            . notmuch)
            ("C-c M"            . notmuch-x-update-dwim)
            ("C-x m"            . notmuch-mua-new-mail)
            (:map notmuch-search-mode-map
@@ -812,41 +814,41 @@
                  ("i"          . sorend/notmuch-tag-inbox)
                  ("d"          . sorend/notmuch-tag-trash)))
     :config
-    ;; (setq notmuch-x--update-timer t)
     (defun sorend/notmuch-tag-toggle-unread ()
       "Toggle 'unread' tag."
       (interactive)
-      (notmuch-x-tag-toggle-dwim "unread"))
+      (notmuch-x-tag-toggle "unread"))
 
     (defun sorend/notmuch-tag-toggle-flagged ()
       "Toggle 'flagged' tag."
       (interactive)
-      (notmuch-x-tag-toggle-dwim "flagged"))
+      (notmuch-x-tag-toggle "flagged"))
 
     (defun sorend/notmuch-tag-archived ()
       "Tag thread as 'archived'."
       (interactive)
-      (notmuch-x-tag-thread-dwim '("-inbox" "-todo" "-trash" "-unread") t))
+      (notmuch-x-tag-thread '("-inbox" "-todo" "-trash" "-unread") t))
 
     (defun sorend/notmuch-tag-todo ()
       "Tag selected message(s) as 'todo'."
       (interactive)
-      (notmuch-x-tag-dwim '("+todo" "+inbox" "-trash")))
+      (notmuch-x-tag '("+todo" "+inbox" "-trash")))
 
     (defun sorend/notmuch-tag-inbox ()
       "Tag selected message(s) as 'inbox'."
       (interactive)
-      (notmuch-x-tag-dwim '("+inbox" "-trash")))
+      (notmuch-x-tag '("+inbox" "-trash")))
 
     (defun sorend/notmuch-tag-spam ()
       "Tag selected message(s) as 'inbox'."
       (interactive)
-      (notmuch-x-tag-dwim '("-inbox" "+spam")))
+      (notmuch-x-tag '("-inbox" "+spam")))
 
     (defun sorend/notmuch-tag-trash ()
       "Tag selected message(s) as 'trash'."
       (interactive)
-      (notmuch-x-tag-dwim '("+trash" "-inbox" "-todo" "-unread"))))
+      (notmuch-x-tag '("+trash" "-inbox" "-todo" "-unread"))))
+
 
   ;;
   ;; org related configuration
@@ -954,21 +956,21 @@
   (use-package citar-embark
     :after citar embark
     :no-require
-    :config (citar-embark-mode)))
+    :config (citar-embark-mode)) )
 
-(use-package calfw)
+;; (use-package calfw)
 
-(use-package calfw-ical
-  :after calfw
-  :config
-  (defun my-open-calendar ()
-    (interactive)
-    (cfw:open-calendar-buffer
-     :contents-sources
-     (list
-      (cfw:ical-create-source "DK" "https://www.officeholidays.com/ics/denmark" "IndianRed")
-      (cfw:ical-create-source "IN" "https://www.officeholidays.com/ics/india" "IndianRed")
-      ))))
+;; (use-package calfw-ical
+;;   :after calfw
+;;   :config
+;;   (defun my-open-calendar ()
+;;     (interactive)
+;;     (cfw:open-calendar-buffer
+;;      :contents-sources
+;;      (list
+;;       (cfw:ical-create-source "DK" "https://www.officeholidays.com/ics/denmark" "IndianRed")
+;;       (cfw:ical-create-source "IN" "https://www.officeholidays.com/ics/india" "IndianRed")
+;;       ))))
 
 
 
