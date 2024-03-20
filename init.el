@@ -716,8 +716,8 @@
 
 (when is-mine?
   ;; put notmuch files in place
-  (sorend/setup-external "~/Mail/.notmuch/hooks/" "pre-new" "post-new")
-  (sorend/setup-external "~/" ".notmuch-config")
+  ;; (sorend/setup-external "~/Mail/.notmuch/hooks/" "pre-new" "post-new")
+  ;; (sorend/setup-external "~/" ".notmuch-config")
 
   ;; functions to setup
   (use-package notmuch
