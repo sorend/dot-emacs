@@ -60,8 +60,7 @@
   :config
   (when (window-system)
     (menu-bar-mode -1)
-    (tool-bar-mode -1)
-    (scroll-bar-mode -1)
+    ;; (scroll-bar-mode -1)
     (setq-default fram-title-format '("Emacs " emacs-version)))
 
   (recentf-mode 1)
@@ -73,13 +72,10 @@
   (when is-bankdata?
     (set-face-attribute 'default nil :height 125))
 
-  (toggle-frame-maximized)
   (setq inhibit-splash-screen t)
   (setq inhibit-startup-message t)
 
-
   ;; (setq garbage-collection-messages t)
-  (setq gc-cons-threshold (* 256 1024 1024))
   (add-function :after
                 after-focus-change-function
                 (lambda () (unless (frame-focus-state) (garbage-collect))))
@@ -318,7 +314,7 @@
   (corfu-cycle t)             ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)
   (corfu-auto-prefix 2)
-  (corfu-auto-delay 0.0)
+  (corfu-auto-delay 0.5)
   (corfu-exit-at-boundary 'separator)
   (corfu-echo-documentation 0.25)
   (corfu-preview-current 'insert)
@@ -503,12 +499,12 @@
 ;;
 ;; use tree-sitter mode instead of "normal" mode
 ;;
-(use-package treesit-auto
-  :custom
-  (treesit-auto-install 'prompt)
-  :config
-  (treesit-auto-add-to-auto-mode-alist 'all)
-  (global-treesit-auto-mode))
+;; (use-package treesit-auto
+;;   :custom
+;;   (treesit-auto-install 'prompt)
+;;   :config
+;;   (treesit-auto-add-to-auto-mode-alist 'all)
+;;   (global-treesit-auto-mode))
 
 ;; lsp
 (use-package eglot

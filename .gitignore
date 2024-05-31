@@ -5,3 +5,4 @@
 !mail
 !external-configs
 !eshell
+!early-init.el
