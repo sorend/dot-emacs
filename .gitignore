@@ -3,6 +3,5 @@
 !init.el
 !/lisp
 !mail
-!external-configs
-!eshell
 !early-init.el
+!hosts.d

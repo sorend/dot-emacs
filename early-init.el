@@ -4,8 +4,12 @@
 (setq warning-suppress-log-types '((comp) (bytecomp)))
 (setq native-comp-async-report-warnings-errors 'silent)
 
+;; We use straight, so disable package.el
+(setq package-enable-at-startup nil)
+
 ;; Silence stupid startup message
 (setq inhibit-startup-echo-area-message (user-login-name))
+
 
 ;; Default frame configuration: full screen, good-looking title bar on macOS
 (setq frame-resize-pixelwise t)

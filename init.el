@@ -1,16 +1,9 @@
 ;; init.el --- Emacs configuration
 
-;; conditional for laptop or not
-(setq is-mine? (string= system-name 'rebala))
-(setq is-bankdata? (string= system-type 'windows-nt))
-(message (format "is-mine? %s  is-bankdata? %s" is-mine? is-bankdata?))
 
-;; proxy at bankdata
-;;(if is-bankdata?
-;;    (setq url-proxy-services
-;;          '(("no_proxy" . "\\(localhost\\|bdpnet.dk\\|bdunet.dk\\)")
-;;            ("http" . "httpproxy.bdpnet.dk:8080")
-;;            ("https" . "httpproxy.bdpnet.dk:8080"))))
+;; load host specifics
+(add-to-list 'load-path "~/.emacs.d/hosts.d/")
+(require (intern (downcase system-name)))
 
 ;; use develop because emacs29 fix is not in master yet
 (setq straight-repository-branch "develop")
@@ -38,23 +31,6 @@
 ;;
 ;; general configuration features
 ;;
-
-;; Enable vertico
-(use-package vertico
-  :init
-  (vertico-mode)
-  :custom
-  (vertico-cycle t)
-;;:bind (:map vertico-map
-;;			  ("C-j" . vertico-next)
-;;			  ("C-k" . vertico-previous))
-  )
-
-;; Persist history over Emacs restarts. Vertico sorts by history position.
-(use-package savehist
-  :init
-  (savehist-mode))
-
 (use-package emacs
   :straight (:type built-in)
   :config
@@ -67,10 +43,8 @@
   (add-to-list 'default-frame-alist '(font . "iosevka-15"))
   ;; (add-to-list 'default-frame-alist '(line-spacing . 0.2))
 
-  (when is-mine? ;; for laptop
-    (set-face-attribute 'default nil :height 125))
-  (when is-bankdata?
-    (set-face-attribute 'default nil :height 125))
+  (set-face-attribute 'default nil :height 125)
+  (set-face-attribute 'default nil :height 125)
 
   (setq inhibit-splash-screen t)
   (setq inhibit-startup-message t)
@@ -122,9 +96,36 @@
   ;; (display-time-mode 1)
   )
 
-(use-package gcmh
-  :config
-  (gcmh-mode 1))
+(use-package avy
+  :straight t
+  :bind (("C-c j" . avy-goto-line)
+         ("C-S-j"   . avy-goto-char-timer)))
+
+;; Enable vertico
+(use-package vertico
+  :straight (vertico :files (:defaults "extensions/*")
+                     :includes (vertico-directory))
+  :init
+  (vertico-mode)
+  :custom
+  (vertico-cycle t))
+
+(use-package vertico-directory
+  :after vertico
+  :bind (:map vertico-map
+              ("M-DEL" . vertico-directory-delete-word)))
+
+
+
+;; Persist history over Emacs restarts. Vertico sorts by history position.
+(use-package savehist
+  :init
+  (savehist-mode))
+
+;; move-text
+(use-package move-text
+  :init
+  (move-text-default-bindings))
 
 ;; Optionally use the `orderless' completion style.
 (use-package orderless
@@ -293,32 +294,40 @@
   ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
 )
 
+;; Modify search results en masse
+(use-package wgrep
+  :ensure t
+  :config
+  (setq wgrep-auto-save-buffer t))
+
 (use-package beacon
   :config
   (beacon-mode 1))
 
 (use-package dash)
 
-(use-package better-defaults
-  :straight (:host nil :repo "https://github.com/emacsmirror/better-defaults")
-;;  :straight (:host nil :repo "https://git.sr.ht/~technomancy/better-defaults")
-  :config
-  (setq backup-directory-alist
-        `((".*" . ,temporary-file-directory)))
-  (setq auto-save-file-name-transforms
-        `((".*" ,temporary-file-directory t))))
+;; (use-package better-defaults
+;;   :straight (:host nil :repo "https://github.com/emacsmirror/better-defaults")
+;; ;;  :straight (:host nil :repo "https://git.sr.ht/~technomancy/better-defaults")
+;;   :config
+;;   (setq backup-directory-alist
+;;         `((".*" . ,temporary-file-directory)))
+;;   (setq auto-save-file-name-transforms
+;;         `((".*" ,temporary-file-directory t))))
 
 (use-package corfu
+  :straight (corfu :files (:defaults "extensions/*")
+                   :includes (corfu-popupinfo))
   ;; TAB-and-Go customizations
-  :custom
-  (corfu-cycle t)             ;; Enable cycling for `corfu-next/previous'
-  (corfu-auto t)
-  (corfu-auto-prefix 2)
-  (corfu-auto-delay 0.5)
-  (corfu-exit-at-boundary 'separator)
-  (corfu-echo-documentation 0.25)
-  (corfu-preview-current 'insert)
-  (corfu-preselect-first nil)
+  ;; :custom
+  ;; (corfu-cycle t)             ;; Enable cycling for `corfu-next/previous'
+  ;; (corfu-auto t)
+  ;; (corfu-auto-prefix 2)
+  ;; (corfu-auto-delay 0.5)
+  ;; (corfu-exit-at-boundary 'separator)
+  ;; (corfu-echo-documentation 0.25)
+  ;; (corfu-preview-current 'insert)
+  ;; (corfu-preselect-first nil)
     ;; Use TAB for cycling, default is `corfu-complete'.
   :bind
   (:map corfu-map
@@ -332,6 +341,36 @@
   :init
   (global-corfu-mode)
   (corfu-history-mode))
+
+;; Part of corfu
+(use-package corfu-popupinfo
+  :after corfu
+  :hook (corfu-mode . corfu-popupinfo-mode)
+  :custom
+  (corfu-popupinfo-delay '(0.25 . 0.1))
+  (corfu-popupinfo-hide nil)
+  :config
+  (corfu-popupinfo-mode))
+
+;; Make corfu popup come up in terminal overlay
+(use-package corfu-terminal
+  :if (not (display-graphic-p))
+  :config
+  (corfu-terminal-mode))
+
+;; Fancy completion-at-point functions; there's too much in the cape package to
+;; configure here; dive in when you're comfortable!
+(use-package cape
+  :init
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file))
+
+;; Pretty icons for corfu
+(use-package kind-icon
+  :if (display-graphic-p)
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 
 
 ;; search improvement
@@ -358,28 +397,26 @@
 
 ;; needed for groovy mode
 (use-package cl-lib)
+(use-package groovy-mode)
+(use-package dockerfile-mode)
 
-;;
-;; Functions to copy external files in place
-;;
-(defun sorend/copy-cfg-file (src dest)
-  (let ((full-src (if (file-name-absolute-p src) (src) (expand-file-name src "~/.emacs.d/external-configs"))))
-    (copy-file full-src dest t)))
-(defun sorend/setup-external (ext-dir &rest ext-files)
-  (let ((ext-dir-full (expand-file-name ext-dir)))
-    (progn
-      (make-directory ext-dir t)
-      (cl-loop for fn in ext-files do (sorend/copy-cfg-file fn ext-dir-full)))))
 
 ;;
 ;; Multiple cursors
 ;;
+;; (use-package multiple-cursors
+;;   :bind
+
+;;   (("C-c SPC" . mc/edit-lines)
+;;    ("C-c C-<down>" . mc/mark-next-like-this)
+;;    ("C-c C-<up>" . mc/mark-previous-like-this)
+;;    ("C-c C-<right>" . mc/mark-all-like-this)))
+
+;; multiple-cursors
 (use-package multiple-cursors
-  :bind
-  (("C-c SPC" . mc/edit-lines)
-   ("C-c C-<down>" . mc/mark-next-like-this)
-   ("C-c C-<up>" . mc/mark-previous-like-this)
-   ("C-c C-<right>" . mc/mark-all-like-this)))
+  :ensure t
+  :init
+  (global-set-key (kbd "C-d") 'mc/mark-next-like-this))
 
 ;;
 ;; Flymake configuration
@@ -416,6 +453,15 @@
   :after dired
   :hook (dired-mode . all-the-icons-dired-mode))
 
+(use-package all-the-icons-completion
+  :after (marginalia all-the-icons)
+  :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
+  :init
+  (all-the-icons-completion-mode))
+
+(use-package vscode-icon
+   :commands (vscode-icon-for-file))
+
 (use-package dired
   :straight (:type built-in))
 
@@ -423,47 +469,7 @@
   :after dired)
 
 
-(defun wsl-copy-region-to-clipboard (start end)
-  "Copy region to Windows clipboard."
-  (interactive "r")
-  (call-process-region start end "clip.exe" nil 0))
-
-(defun wsl-clipboard-to-string ()
-  "Return Windows clipboard as string."
-  (let ((coding-system-for-read 'dos))
-    (substring				; remove added trailing \n
-     (shell-command-to-string
-      "powershell.exe -Command Get-Clipboard") 0 -1)))
-
-(defun wsl-paste-from-clipboard (arg)
-  "Insert Windows clipboard at point. With prefix ARG, also add to kill-ring"
-  (interactive "P")
-  (let ((clip (wsl-clipboard-to-string)))
-    (insert clip)
-    (if arg (kill-new clip))))
-
-
 (global-set-key (kbd "C-c r")  'rename-visited-file)
-
-;; (when is-bankdata?
-;;   ;; keychains
-;;   (defun sorend/keychain-file-contents (filename)
-;;     "Return the contents of FILENAME."
-;;     (with-temp-buffer
-;;       (insert-file-contents filename)
-;;       (buffer-string)))
-
-;;   (defun sorend/keychain-refresh-environment ()
-;;     (interactive)
-;;     (let* ((ssh (sorend/keychain-file-contents (car (file-expand-wildcards "~/.keychain/*-sh" t)))))
-;;       (list (and ssh
-;;                  (string-match "SSH_AUTH_SOCK[=\s]\\([^\s;\n]*\\)" ssh)
-;;                  (setenv       "SSH_AUTH_SOCK" (match-string 1 ssh)))
-;;             (and ssh
-;;                  (string-match "SSH_AGENT_PID[=\s]\\([0-9]*\\)?" ssh)
-;;                  (setenv       "SSH_AGENT_PID" (match-string 1 ssh))))))
-
-;;   (sorend/keychain-refresh-environment))
 
 
 ;; (use consult-git-grep instead M-s-G)
@@ -491,7 +497,6 @@
 
 ;; spell checking
 (use-package jinx
-  :if is-mine?
   :hook (emacs-startup . global-jinx-mode)
   :bind (("M-$" . jinx-correct)
          ("C-M-l" . jinx-languages)))
@@ -514,15 +519,20 @@
               ("C-S-<down-mouse-1>" . #'xref-find-references)
               ("C-c C-c" . #'eglot-code-actions))
   :custom
-  (eglot-autoshutdown t))
+  (eglot-send-changes-idle-time 0.1)
+  (eglot-extend-to-xref t)
+  (eglot-autoshutdown t)
+  :config
+  (fset #'jsonrpc--log-event #'ignore)  ; massive perf boost---don't log every event
+  )
 
-(use-package ledger-mode)
+;; (use-package ledger-mode)
 
-(use-package beancount
-  :straight (beancount-mode
-             :type git
-             :host github
-             :repo "beancount/beancount-mode"))
+;; (use-package beancount
+;;   :straight (beancount-mode
+;;              :type git
+;;              :host github
+;;              :repo "beancount/beancount-mode"))
 
 
 ;;
@@ -568,12 +578,13 @@
 ;; Misc file editing modes
 ;;
 (use-package markdown-mode
-  :mode (("README\\.md\\'" . gfm-mode)
-         ("\\.md\\'" . markdown-mode)
-         ("\\.markdown\\'" . markdown-mode))
-  :init (setq markdown-command "multimarkdown")
-  :config
-  (use-package markdown-preview-mode))
+  :hook
+  (markdown-mode . visual-line-mode)
+  :init
+  (setq markdown-command "multimarkdown"))
+
+(use-package markdown-preview-mode
+  :after markdown-mode)
 
 ;; yaml
 (use-package yaml-mode)
@@ -589,7 +600,6 @@
 ;;
 
 (use-package pdf-tools
-  :if is-mine?
   :custom
   (pdf-view-display-size 'fit-page)
   (pdf-annot-activate-created-annotations t)
@@ -617,7 +627,6 @@
   (reftex-cite-prompt-optional-args t))
 
 (use-package cdlatex)
-
 
 (use-package auto-dictionary
   :init
@@ -710,249 +719,271 @@
 
 (setq my-org-directory (expand-file-name "~/Mega/notes/"))
 
-(when is-mine?
-  ;; put notmuch files in place
-  ;; (sorend/setup-external "~/Mail/.notmuch/hooks/" "pre-new" "post-new")
-  ;; (sorend/setup-external "~/" ".notmuch-config")
-
-  ;; functions to setup
-  (use-package notmuch
-    :straight (:host github :repo "notmuch/notmuch")
-    :after message gnus-alias
-    :custom
-    (notmuch-fcc-dirs '(("sorend@gmail.com" . nil)))
-    (notmuch-saved-searches
-     (quote
-      ((:name "inbox" :query "tag:inbox" :key "i")
-       (:name "flagged" :query "tag:flagged" :key "f")
-       (:name "sent" :query "tag:sent" :key "t")
-       (:name "drafts" :query "tag:draft" :key "d")
-       (:name "all mail" :query "*" :key "a" :sort-order newest-first))))
-    (message-kill-buffer-on-exit t)
-    (mail-specify-envelope-from t)
-    (message-send-mail-function 'smtpmail-send-it)
-    (message-sendmail-f-is-evil t)
-    (mail-envelope-from 'header)
-    (message-sendmail-envelope-from 'header))
+;; functions to setup
+(use-package notmuch
+  :straight (:host github :repo "notmuch/notmuch")
+  :if feature-notmuch?
+  :after message gnus-alias
+  :custom
+  (notmuch-fcc-dirs '(("sorend@gmail.com" . nil)))
+  (notmuch-saved-searches
+   (quote
+    ((:name "inbox" :query "tag:inbox" :key "i")
+     (:name "flagged" :query "tag:flagged" :key "f")
+     (:name "sent" :query "tag:sent" :key "t")
+     (:name "drafts" :query "tag:draft" :key "d")
+     (:name "all mail" :query "*" :key "a" :sort-order newest-first))))
+  (message-kill-buffer-on-exit t)
+  (mail-specify-envelope-from t)
+  (message-send-mail-function 'smtpmail-send-it)
+  (message-sendmail-f-is-evil t)
+  (mail-envelope-from 'header)
+  (message-sendmail-envelope-from 'header))
 
   ;; use gnus-alias X-Message-SMTP-Header
-  (use-package gnus-alias
-    :custom
-    (gnus-alias-identity-alist
-     '(("gmail" "" "Soren A D <sorend@gmail.com>" ""
-        (("X-Message-SMTP-Method" . "smtp smtp.gmail.com 465 sorend@gmail.com"))
-        "" "")
-       ("svu" "" "Soren Atmakuri Davidsen <sorend@cs.svu-ac.in>" ""
-        (("X-Message-SMTP-Method" . "smtp pixel.mxrouting.net 465 sorend@cs.svu-ac.in"))
-        "" "")
-       ("corp" "" "Soren Atmakuri Davidsen <soren@hamisoke.com>" ""
-        (("X-Message-SMTP-Method" . "smtp pixel.mxrouting.net 465 soren@hamisoke.com"))
-        "" "")
-       ("sadcom" "" "Soren Atmakuri Davidsen <soren@atmakuridavidsen.com>" ""
-        (("X-Message-SMTP-Method" . "smtp smtp.zoho.com 465 soren@atmakuridavidsen.com"))
-        "" "")))
-    (gnus-alias-identity-rules
-     '(("gmail" ("from" "sorend@gmail.com" both) "gmail")
-       ("corp" ("from" "soren@hamisoke.com" both) "corp")
-       ("svu" ("from" "sorend@cs.svu-ac.in" both) "svu")
-       ("sadcom" ("from" "soren@atmakuridavidsen.com" both) "sadcom")))
-    :config
-    (gnus-alias-init))
+(use-package gnus-alias
+  :if feature-notmuch?
+  :custom
+  (gnus-alias-identity-alist
+   '(("gmail" "" "Soren A D <sorend@gmail.com>" ""
+      (("X-Message-SMTP-Method" . "smtp smtp.gmail.com 465 sorend@gmail.com"))
+      "" "")
+     ("svu" "" "Soren Atmakuri Davidsen <sorend@cs.svu-ac.in>" ""
+      (("X-Message-SMTP-Method" . "smtp pixel.mxrouting.net 465 sorend@cs.svu-ac.in"))
+      "" "")
+     ("corp" "" "Soren Atmakuri Davidsen <soren@hamisoke.com>" ""
+      (("X-Message-SMTP-Method" . "smtp pixel.mxrouting.net 465 soren@hamisoke.com"))
+      "" "")
+     ("sadcom" "" "Soren Atmakuri Davidsen <soren@atmakuridavidsen.com>" ""
+      (("X-Message-SMTP-Method" . "smtp smtp.zoho.com 465 soren@atmakuridavidsen.com"))
+      "" "")))
+  (gnus-alias-identity-rules
+   '(("gmail" ("from" "sorend@gmail.com" both) "gmail")
+     ("corp" ("from" "soren@hamisoke.com" both) "corp")
+     ("svu" ("from" "sorend@cs.svu-ac.in" both) "svu")
+     ("sadcom" ("from" "soren@atmakuridavidsen.com" both) "sadcom")))
+  :config
+  (gnus-alias-init))
 
-  ;; allow to switch identity while writing mail
-  (use-package message
-    :straight (:type built-in)
-    :bind
-    (:map message-mode-map
-          ("C-c C-i" . sorend/message-switch-identity))
-    :config
-    (defun sorend/message-switch-identity ()
-      (interactive)
-      (message-remove-header "Fcc")
-      (message-remove-header "Organization")
-      (gnus-alias-select-identity)
-      (notmuch-fcc-header-setup)))
+;; allow to switch identity while writing mail
+(use-package message
+  :straight (:type built-in)
+  :if feature-notmuch?
+  :bind
+  (:map message-mode-map
+        ("C-c C-i" . sorend/message-switch-identity))
+  :config
+  (defun sorend/message-switch-identity ()
+    (interactive)
+    (message-remove-header "Fcc")
+    (message-remove-header "Organization")
+    (gnus-alias-select-identity)
+    (notmuch-fcc-header-setup)))
 
-  ;; notmuch-x
-  (use-package notmuch-x
-    :straight (notmuch-x :host github :repo "bcardoso/notmuch-x")
-    :after notmuch
-    :custom
-    (notmuch-x-auto-update nil)
-    (notmuch-x-auto-update-mode nil)
-    :bind (("C-c m"            . notmuch)
-           ("C-c M"            . notmuch-x-update-dwim)
-           ("C-x m"            . notmuch-mua-new-mail)
-           (:map notmuch-search-mode-map
-                 ("Q"          . notmuch-x-kill-all-search-buffers)
-                 ("S"          . notmuch-x-edit-current-search)
-                 ("U"          . notmuch-unthreaded)
-                 ("u"          . sorend/notmuch-tag-toggle-unread)
-                 ("f"          . sorend/notmuch-tag-toggle-flagged)
-                 ("a"          . sorend/notmuch-tag-archived)
-                 ("T"          . sorend/notmuch-tag-todo)
-                 ("i"          . sorend/notmuch-tag-inbox)
-                 ("d"          . sorend/notmuch-tag-trash))
-           (:map notmuch-show-mode-map
-                 ("<C-return>" . notmuch-x-toggle-thread-visibility)
-                 ("<RET>"      . notmuch-x-toggle-message-or-browse-url)
-                 ("<tab>"      . notmuch-x-next-button-or-link)
-                 ("<backtab>"  . notmuch-x-previous-button-or-link)
-                 ("n"          . notmuch-show-next-message)
-                 ("N"          . notmuch-show-next-open-message)
-                 ("p"          . notmuch-show-previous-message)
-                 ("P"          . notmuch-show-previous-open-message)
-                 ("o"          . notmuch-x-view-part-in-browser)
-                 ("u"          . sorend/notmuch-tag-toggle-unread)
-                 ("f"          . sorend/notmuch-tag-toggle-flagged)
-                 ("a"          . sorend/notmuch-tag-archived)
-                 ("T"          . sorend/notmuch-tag-todo)
-                 ("i"          . sorend/notmuch-tag-inbox)
-                 ("d"          . sorend/notmuch-tag-trash)))
-    :config
-    (defun sorend/notmuch-tag-toggle-unread ()
-      "Toggle 'unread' tag."
-      (interactive)
-      (notmuch-x-tag-toggle "unread"))
+;; notmuch-x
+(use-package notmuch-x
+  :straight (notmuch-x :host github :repo "bcardoso/notmuch-x")
+  :if feature-notmuch?
+  :after notmuch
+  :custom
+  (notmuch-x-auto-update nil)
+  (notmuch-x-auto-update-mode nil)
+  :bind (("C-c m"            . notmuch)
+         ("C-c M"            . notmuch-x-update-dwim)
+         ("C-x m"            . notmuch-mua-new-mail)
+         (:map notmuch-search-mode-map
+               ("Q"          . notmuch-x-kill-all-search-buffers)
+               ("S"          . notmuch-x-edit-current-search)
+               ("U"          . notmuch-unthreaded)
+               ("u"          . sorend/notmuch-tag-toggle-unread)
+               ("f"          . sorend/notmuch-tag-toggle-flagged)
+               ("a"          . sorend/notmuch-tag-archived)
+               ("T"          . sorend/notmuch-tag-todo)
+               ("i"          . sorend/notmuch-tag-inbox)
+               ("d"          . sorend/notmuch-tag-trash))
+         (:map notmuch-show-mode-map
+               ("<C-return>" . notmuch-x-toggle-thread-visibility)
+               ("<RET>"      . notmuch-x-toggle-message-or-browse-url)
+               ("<tab>"      . notmuch-x-next-button-or-link)
+               ("<backtab>"  . notmuch-x-previous-button-or-link)
+               ("n"          . notmuch-show-next-message)
+               ("N"          . notmuch-show-next-open-message)
+               ("p"          . notmuch-show-previous-message)
+               ("P"          . notmuch-show-previous-open-message)
+               ("o"          . notmuch-x-view-part-in-browser)
+               ("u"          . sorend/notmuch-tag-toggle-unread)
+               ("f"          . sorend/notmuch-tag-toggle-flagged)
+               ("a"          . sorend/notmuch-tag-archived)
+               ("T"          . sorend/notmuch-tag-todo)
+               ("i"          . sorend/notmuch-tag-inbox)
+               ("d"          . sorend/notmuch-tag-trash)))
+  :config
+  (defun sorend/notmuch-tag-toggle-unread ()
+    "Toggle 'unread' tag."
+    (interactive)
+    (notmuch-x-tag-toggle "unread"))
 
-    (defun sorend/notmuch-tag-toggle-flagged ()
-      "Toggle 'flagged' tag."
-      (interactive)
-      (notmuch-x-tag-toggle "flagged"))
+  (defun sorend/notmuch-tag-toggle-flagged ()
+    "Toggle 'flagged' tag."
+    (interactive)
+    (notmuch-x-tag-toggle "flagged"))
 
-    (defun sorend/notmuch-tag-archived ()
-      "Tag thread as 'archived'."
-      (interactive)
-      (notmuch-x-tag-thread '("-inbox" "-todo" "-trash" "-unread") t))
+  (defun sorend/notmuch-tag-archived ()
+    "Tag thread as 'archived'."
+    (interactive)
+    (notmuch-x-tag-thread '("-inbox" "-todo" "-trash" "-unread") t))
 
-    (defun sorend/notmuch-tag-todo ()
-      "Tag selected message(s) as 'todo'."
-      (interactive)
-      (notmuch-x-tag '("+todo" "+inbox" "-trash")))
+  (defun sorend/notmuch-tag-todo ()
+    "Tag selected message(s) as 'todo'."
+    (interactive)
+    (notmuch-x-tag '("+todo" "+inbox" "-trash")))
 
-    (defun sorend/notmuch-tag-inbox ()
-      "Tag selected message(s) as 'inbox'."
-      (interactive)
-      (notmuch-x-tag '("+inbox" "-trash")))
+  (defun sorend/notmuch-tag-inbox ()
+    "Tag selected message(s) as 'inbox'."
+    (interactive)
+    (notmuch-x-tag '("+inbox" "-trash")))
 
-    (defun sorend/notmuch-tag-spam ()
-      "Tag selected message(s) as 'inbox'."
-      (interactive)
-      (notmuch-x-tag '("-inbox" "+spam")))
+  (defun sorend/notmuch-tag-spam ()
+    "Tag selected message(s) as 'inbox'."
+    (interactive)
+    (notmuch-x-tag '("-inbox" "+spam")))
 
-    (defun sorend/notmuch-tag-trash ()
-      "Tag selected message(s) as 'trash'."
-      (interactive)
-      (notmuch-x-tag '("+trash" "-inbox" "-todo" "-unread"))))
-
-
-  ;;
-  ;; org related configuration
-  ;;
-  (use-package org
-    :straight (:type built-in)
-    :demand t
-    :custom
-    (org-startup-indented t)
-    (org-pretty-entities t)
-    (org-hide-emphasis-markers t)
-    (org-startup-with-inline-images t)
-    (org-image-actual-width '(300))
-    (org-directory my-org-directory)
-    (org-default-notes-file org-directory)
-    (org-latex-pdf-process '("latexmk -f -pdf -%latex -bibtex -interaction=nonstopmode -output-directory=%o %f"))
-    ;; (org-capture-templates
-    ;;  '(("t" "Todo" entry (file+headline (expand-file-name "gtd.org" org-directory) "Tasks"))
-    ;;    ("a" "Article" entry ))
-    :config
-    (defun sorend/org-grep (&optional initial)
-      (interactive "P")
-      (consult-ripgrep org-directory initial))
-    ;; (plist-put org-format-latex-options :scale 2)
-    (require 'org-tempo)  ;; make
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((emacs-lisp . t)
-       (shell . t)
-       (python . t)))
-    (add-hook 'org-mode-hook #'visual-line-mode)
-    ;; latex headlines can be ignored
-    ;; latex can handle IEEEtran class
-    (with-eval-after-load 'ox-latex
-      (add-to-list 'org-latex-classes
-                   '("IEEEtran"
-                     "\\documentclass{IEEEtran}"
-                     ("\\section{%s}" . "\\section*{%s}")
-                     ("\\subsection{%s}" . "\\subsection*{%s}")
-                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
-                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
-    :bind
-    (("C-c n c" . org-capture)
-     ("C-c n f" . sorend/org-grep)))
-
-  (use-package org-contrib
-    :after org
-    :config
-    (require 'ox-extra)
-    (ox-extras-activate '(ignore-headlines)))
-
-  (use-package org-appear
-    :after org
-    :hook (org-mode . org-appear-mode))
-
-  ;; Nice bullets
-  ;; (use-package org-superstar
-  ;;   :after org
-  ;;   :custom
-  ;;   (org-superstar-special-todo-items t)
-  ;;   :config
-  ;;   (add-hook 'org-mode-hook (lambda ()
-  ;;                              (org-superstar-mode 1))))
+  (defun sorend/notmuch-tag-trash ()
+    "Tag selected message(s) as 'trash'."
+    (interactive)
+    (notmuch-x-tag '("+trash" "-inbox" "-todo" "-unread")))
 
 
-  (use-package org-modern
-    :after org
-    :config
-    (global-org-modern-mode))
+;;
+;; org related configuration
+;;
+(use-package org
+  :straight (:type built-in)
+  :demand t
+  :custom
+  (org-startup-indented t)
+  (org-pretty-entities t)
+  (org-hide-emphasis-markers t)
+  (org-startup-with-inline-images t)
+  (org-image-actual-width '(300))
+  (org-directory my-org-directory)
+  (org-default-notes-file org-directory)
+  (org-latex-pdf-process '("latexmk -f -pdf -%latex -bibtex -interaction=nonstopmode -output-directory=%o %f"))
+  ;; (org-capture-templates
+  ;;  '(("t" "Todo" entry (file+headline (expand-file-name "gtd.org" org-directory) "Tasks"))
+  ;;    ("a" "Article" entry ))
+  :config
+  (defun sorend/org-grep (&optional initial)
+    (interactive "P")
+    (consult-ripgrep org-directory initial))
+  ;; (plist-put org-format-latex-options :scale 2)
+  (require 'org-tempo)  ;; make
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (shell . t)
+     (python . t)))
+  (add-hook 'org-mode-hook #'visual-line-mode)
+  ;; latex headlines can be ignored
+  ;; latex can handle IEEEtran class
+  (with-eval-after-load 'ox-latex
+    (add-to-list 'org-latex-classes
+                 '("IEEEtran"
+                   "\\documentclass{IEEEtran}"
+                   ("\\section{%s}" . "\\section*{%s}")
+                   ("\\subsection{%s}" . "\\subsection*{%s}")
+                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                   ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                   ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
+  :bind
+  (("C-c n c" . org-capture)
+   ("C-c n f" . sorend/org-grep)))
 
-  ;; org-present
-  (use-package org-present
-    :after org
-    :hook
-    (org-present-mode . (lambda ()
-                          (display-line-numbers-mode -1)
-                          (org-present-big)
-                          (org-display-inline-images)
-                          (org-present-hide-cursor)
-                          (org-present-read-only)))
-    (org-present-mode-quit . (lambda ()
-                               (display-line-numbers-mode +1)
-                               (org-present-small)
-                               (org-remove-inline-images)
-                               (org-present-show-cursor)
-                               (org-present-read-write))))
+(use-package org-contrib
+  :after org
+  :config
+  (require 'ox-extra)
+  (ox-extras-activate '(ignore-headlines)))
 
-  (use-package citar
-    :after org
-    :bind
-    (:map org-mode-map
-          :package org
-          ("C-c b" . #'org-cite-insert))
-    :custom
-    (org-cite-global-bibliography '("~/Mega/research/bib/references.bib"))
-    (citar-bibliography org-cite-global-bibliography)
-    (org-cite-insert-processor 'citar)
-    (org-cite-follow-processor 'citar)
-    (org-cite-activate-processor 'citar)
-    (org-cite-export-processors '((latex biblatex) (t csl)))
-    :config
-    (require 'oc-biblatex))
+(use-package org-appear
+  :after org
+  :hook (org-mode . org-appear-mode))
 
-  (use-package citar-embark
-    :after citar embark
-    :no-require
-    :config (citar-embark-mode)) )
+(use-package org-modern
+  :after org
+  :config
+  (global-org-modern-mode))
+
+;; org-present
+(use-package org-present
+  :after org
+  :hook
+  (org-present-mode . (lambda ()
+                        (display-line-numbers-mode -1)
+                        (org-present-big)
+                        (org-display-inline-images)
+                        (org-present-hide-cursor)
+                        (org-present-read-only)))
+  (org-present-mode-quit . (lambda ()
+                             (display-line-numbers-mode +1)
+                             (org-present-small)
+                             (org-remove-inline-images)
+                             (org-present-show-cursor)
+                             (org-present-read-write))))
+
+(use-package citar
+  :after org
+  :bind
+  (:map org-mode-map
+        :package org
+        ("C-c b" . #'org-cite-insert))
+  :custom
+  (org-cite-global-bibliography '("~/Mega/research/bib/references.bib"))
+  (citar-bibliography org-cite-global-bibliography)
+  (org-cite-insert-processor 'citar)
+  (org-cite-follow-processor 'citar)
+  (org-cite-activate-processor 'citar)
+  (org-cite-export-processors '((latex biblatex) (t csl)))
+  :config
+  (require 'oc-biblatex))
+
+(use-package citar-embark
+  :after citar embark
+  :no-require
+  :config (citar-embark-mode)))
+
+(when feature-wsl?
+  (defun wsl-copy-region-to-clipboard (start end)
+    "Copy region to Windows clipboard."
+    (interactive "r")
+    (call-process-region start end "clip.exe" nil 0))
+
+  (defun wsl-clipboard-to-string ()
+    "Return Windows clipboard as string."
+    (let ((coding-system-for-read 'dos))
+      (substring				; remove added trailing \n
+       (shell-command-to-string
+        "powershell.exe -Command Get-Clipboard") 0 -1)))
+
+  (defun wsl-paste-from-clipboard (arg)
+    "Insert Windows clipboard at point. With prefix ARG, also add to kill-ring"
+    (interactive "P")
+    (let ((clip (wsl-clipboard-to-string)))
+      (insert clip)
+      (if arg (kill-new clip)))))
+
+
+
+(use-package 1password
+  :straight '(1password :host github :repo "justinbarclay/1password.el" :branch "main")
+  :if feature-1password?
+  :init
+  (1password-enable-auth-source))
+  ;; :custom
+  ;; ((1password-results-formatter . '1password-colour-formatter)))
+
+
+
 
 ;; (use-package calfw)
 
