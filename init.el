@@ -61,8 +61,8 @@
   (global-display-line-numbers-mode 1)
 
   (auth-source-pass-enable) ;; start auth source pass
-  (setq auth-source-debug t
-        auth-source-do-cache nil
+  (setq auth-source-debug nil ;; show output
+        auth-source-do-cache t ;; cache
         auth-sources '(password-store))
 
   ;; ediff
@@ -516,6 +516,7 @@
   :bind (:map eglot-mode-map
               ("C-c a r" . #'eglot-rename)
               ("C-<down-mouse-1>" . #'xref-find-definitions)
+              ("C-c b" . #'xref-go-back)
               ("C-S-<down-mouse-1>" . #'xref-find-references)
               ("C-c C-c" . #'eglot-code-actions))
   :custom
@@ -717,7 +718,8 @@
    :map ebib-multiline-mode-map
    ("C-c C-c" . ebib-quit-multiline-buffer-and-save)))
 
-(setq my-org-directory (expand-file-name "~/Mega/notes/"))
+(unless (boundp 'my-org-directory)
+  (setq my-org-directory (expand-file-name "~/Mega/notes/")))
 
 ;; functions to setup
 (use-package notmuch
