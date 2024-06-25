@@ -70,6 +70,14 @@
         ediff-diff-options "-w"
         ediff-window-setup-function 'ediff-setup-windows-plain)
 
+  ;; auto out of the way
+  (setq backup-directory-alist `(("." . "~/.cache/emacs-backups"))
+        backup-by-copying t
+        delete-old-versions t
+        kept-new-versions 6
+        kept-old-versions 2
+        version-control t)
+
   ;; diable warnings
   (setq warning-minimum-level :error)
 
@@ -146,7 +154,7 @@
 
 (use-package embark
   :straight t
-  :after vertico
+  :after (vertico wgrep)
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
    ("C-;" . embark-dwim)        ;; good alternative: M-.
@@ -172,7 +180,7 @@
 
 (use-package consult
   :straight t
-  :after vertico
+  :after (vertico wgrep)
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
          ([remap yank-pop] . consult-yank-pop)
@@ -220,6 +228,7 @@
          ;; ("M-s k" . consult-keep-lines)
          ;; ("M-s u" . consult-focus-lines)
          ("C-f" . consult-ripgrep)
+         ("C-S-f" . consult-find)
          ;; Isearch integration
          ("M-s e" . consult-isearch-history)
          :map isearch-mode-map
@@ -296,7 +305,6 @@
 
 ;; Modify search results en masse
 (use-package wgrep
-  :ensure t
   :config
   (setq wgrep-auto-save-buffer t))
 
