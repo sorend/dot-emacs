@@ -121,7 +121,11 @@
 (use-package vertico-directory
   :after vertico
   :bind (:map vertico-map
-              ("M-DEL" . vertico-directory-delete-word)))
+              ("M-DEL" . #'vertico-directory-delete-word)
+              ("RET" . #'vertico-directory-enter)
+              ("DEL" . #'vertico-directory-delete-char))
+  :config
+  (add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy))
 
 
 
@@ -308,9 +312,9 @@
   :config
   (setq wgrep-auto-save-buffer t))
 
-(use-package beacon
-  :config
-  (beacon-mode 1))
+;; (use-package beacon
+;;   :config
+;;   (beacon-mode 1))
 
 (use-package dash)
 
@@ -373,13 +377,10 @@
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-file))
 
-;; Pretty icons for corfu
-(use-package kind-icon
-  :if (display-graphic-p)
-  :after corfu
+(use-package nerd-icons-corfu
+  :after (corfu nerd-icons)
   :config
-  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
-
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
 ;; search improvement
 (use-package ctrlf
@@ -453,25 +454,26 @@
   (setq magit-display-buffer-function
         'magit-display-buffer-fullframe-status-v1))
 
-(use-package all-the-icons
-  :if (display-graphic-p))
+(use-package nerd-icons)
 
-(use-package all-the-icons-dired
-  :if (display-graphic-p)
+(use-package nerd-icons-dired
   :after dired
-  :hook (dired-mode . all-the-icons-dired-mode))
+  :hook (dired-mode . nerd-icons-dired-mode))
 
-(use-package all-the-icons-completion
-  :after (marginalia all-the-icons)
-  :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
-  :init
-  (all-the-icons-completion-mode))
-
-(use-package vscode-icon
-   :commands (vscode-icon-for-file))
+(use-package nerd-icons-completion
+  :after (marginalia nerd-icons)
+  :config
+  (nerd-icons-completion-mode)
+  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
 (use-package dired
-  :straight (:type built-in))
+  :straight (:type built-in)
+  :custom
+  (dired-recursive-copies 'always)
+  (dired-recursive-deletes 'always)
+  (delete-by-moving-to-trash t)
+  (dired-dwim-target t)
+  (dired-make-directory-clickable t))
 
 (use-package dired-single
   :after dired)
@@ -991,6 +993,25 @@
   (1password-enable-auth-source))
   ;; :custom
   ;; ((1password-results-formatter . '1password-colour-formatter)))
+
+
+;; (use-package shell-maker
+;;   :straight (:host github :repo "xenodium/chatgpt-shell" :files ("shell-maker.el")))
+
+;; (use-package chatgpt-shell
+;;   :requires shell-maker
+;;   :straight (:host github :repo "xenodium/chatgpt-shell" :files ("chatgpt-shell.el"))
+;;   :custom
+;;   ((chatgpt-shell-openai-key
+;;     (lambda ()
+;;       (auth-source-pass-get 'secret "services/api.openai.com")))))
+
+(use-package chatgpt-shell
+  :custom
+  ((chatgpt-shell-openai-key
+    (lambda ()
+      (auth-source-pass-get 'secret "services/api.openai.com")))))
+
 
 
 
