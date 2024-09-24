@@ -914,7 +914,11 @@
                    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                    ("\\paragraph{%s}" . "\\paragraph*{%s}")
                    ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
-  (let* ((variable-tuple
+  :bind
+  (("C-c n c" . org-capture)
+   ("C-c n f" . sorend/org-grep)))
+
+(let* ((variable-tuple
           (cond ((x-list-fonts "ETBembo") '(:font "ETBembo"))
                 ((x-list-fonts "EB Garamond") '(:font "EB Garamond"))
                 (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
@@ -931,9 +935,6 @@
      `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.5))))
      `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.75))))
      `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil))))))
-  :bind
-  (("C-c n c" . org-capture)
-   ("C-c n f" . sorend/org-grep)))
 
 
 (use-package org-contrib
