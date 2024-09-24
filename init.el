@@ -98,7 +98,7 @@
   (load-theme 'modus-operandi-tinted t)
   (setq modus-themes-org-blocks 'tinted)
   ;; yes/no -> y/n
-  ;; (defalias 'yes-or-no-p 'y-or-n-p)
+  (defalias 'yes-or-no-p 'y-or-n-p)
   (setq revert-without-query '(".*pdf$"))
   ;; display time mode on
   ;; (display-time-mode 1)
