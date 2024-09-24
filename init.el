@@ -94,11 +94,11 @@
   ;; refresh whee
   (global-set-key (kbd "<f5>") 'revert-buffer)
   ;; theme
-  (load-theme 'modus-vivendi t)
-  ;; (load-theme 'modus-operandi t)
+  ;; (load-theme 'modus-vivendi t)
+  (load-theme 'modus-operandi-tinted t)
   (setq modus-themes-org-blocks 'tinted)
   ;; yes/no -> y/n
-  (defalias 'yes-or-no-p 'y-or-n-p)
+  ;; (defalias 'yes-or-no-p 'y-or-n-p)
   (setq revert-without-query '(".*pdf$"))
   ;; display time mode on
   ;; (display-time-mode 1)
@@ -884,6 +884,13 @@
   ;; (org-capture-templates
   ;;  '(("t" "Todo" entry (file+headline (expand-file-name "gtd.org" org-directory) "Tasks"))
   ;;    ("a" "Article" entry ))
+  (org-format-latex-options (list :foreground 'auto
+                                  :background 'auto
+                                  :scale 1.0
+                                  :html-foreground "Black"
+                                  :html-background "Transparent"
+                                  :html-scale 1.0
+                                  :matchers '("begin" "$1" "$" "$$" "\\(" "\\[")))
   :config
   (defun sorend/org-grep (&optional initial)
     (interactive "P")
@@ -907,9 +914,27 @@
                    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                    ("\\paragraph{%s}" . "\\paragraph*{%s}")
                    ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
+  (let* ((variable-tuple
+          (cond ((x-list-fonts "ETBembo") '(:font "ETBembo"))
+                ((x-list-fonts "EB Garamond") '(:font "EB Garamond"))
+                (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
+         (base-font-color     (face-foreground 'default nil 'default))
+         (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
+    (custom-theme-set-faces
+     'user
+     `(org-level-8 ((t (,@headline ,@variable-tuple))))
+     `(org-level-7 ((t (,@headline ,@variable-tuple))))
+     `(org-level-6 ((t (,@headline ,@variable-tuple))))
+     `(org-level-5 ((t (,@headline ,@variable-tuple))))
+     `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.1))))
+     `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.25))))
+     `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.5))))
+     `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.75))))
+     `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil))))))
   :bind
   (("C-c n c" . org-capture)
    ("C-c n f" . sorend/org-grep)))
+
 
 (use-package org-contrib
   :after org
@@ -925,6 +950,29 @@
   :after org
   :config
   (global-org-modern-mode))
+
+;; (use-package org-latex-preview
+;;   :after org
+;;   :config
+;;   ;; Increase preview width
+;;   (plist-put org-latex-preview-appearance-options :page-width 0.8)
+;;   ;; Use dvisvgm to generate previews
+;;   ;; You don't need this, it's the default:
+;;   (setq org-latex-preview-process-default 'dvisvgm)
+;;   ;; Turn on auto-mode, it's built into Org and much faster/more featured than
+;;   ;; org-fragtog. (Remember to turn off/uninstall org-fragtog.)
+;;   (add-hook 'org-mode-hook 'org-latex-preview-auto-mode)
+;;   ;; Block C-n and C-p from opening up previews when using auto-mode
+;;   (add-hook 'org-latex-preview-auto-ignored-commands 'next-line)
+;;   (add-hook 'org-latex-preview-auto-ignored-commands 'previous-line)
+;;   ;; Enable consistent equation numbering
+;;   (setq org-latex-preview-numbered t)
+;;   ;; Bonus: Turn on live previews.  This shows you a live preview of a LaTeX
+;;   ;; fragment and updates the preview in real-time as you edit it.
+;;   ;; To preview only environments, set it to '(block edit-special) instead
+;;   (setq org-latex-preview-live t)
+;;   ;; More immediate live-previews -- the default delay is 1 second
+;;   (setq org-latex-preview-live-debounce 0.25))
 
 ;; org-present
 (use-package org-present
