@@ -863,7 +863,7 @@
   (defun sorend/notmuch-tag-trash ()
     "Tag selected message(s) as 'trash'."
     (interactive)
-    (notmuch-x-tag '("+trash" "-inbox" "-todo" "-unread")))
+    (notmuch-x-tag '("+trash" "-inbox" "-todo" "-unread"))))
 
 
 ;;
@@ -1011,7 +1011,7 @@
 (use-package citar-embark
   :after citar embark
   :no-require
-  :config (citar-embark-mode)))
+  :config (citar-embark-mode))
 
 (when feature-wsl?
   (defun wsl-copy-region-to-clipboard (start end)
@@ -1045,9 +1045,6 @@
 
 
 (use-package gptel)
-
-
-
 
 
 ;; (use-package calfw)
