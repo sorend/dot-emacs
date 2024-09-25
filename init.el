@@ -40,7 +40,7 @@
     (setq-default fram-title-format '("Emacs " emacs-version)))
 
   (recentf-mode 1)
-  (add-to-list 'default-frame-alist '(font . "iosevka-15"))
+  (add-to-list 'default-frame-alist '(font . "Iosevka Nerd Font-15"))
   ;; (add-to-list 'default-frame-alist '(line-spacing . 0.2))
 
   (set-face-attribute 'default nil :height 125)
@@ -1043,22 +1043,7 @@
   ;; ((1password-results-formatter . '1password-colour-formatter)))
 
 
-;; (use-package shell-maker
-;;   :straight (:host github :repo "xenodium/chatgpt-shell" :files ("shell-maker.el")))
-
-;; (use-package chatgpt-shell
-;;   :requires shell-maker
-;;   :straight (:host github :repo "xenodium/chatgpt-shell" :files ("chatgpt-shell.el"))
-;;   :custom
-;;   ((chatgpt-shell-openai-key
-;;     (lambda ()
-;;       (auth-source-pass-get 'secret "services/api.openai.com")))))
-
-(use-package chatgpt-shell
-  :custom
-  ((chatgpt-shell-openai-key
-    (lambda ()
-      (auth-source-pass-get 'secret "services/api.openai.com")))))
+(use-package gptel)
 
 
 
