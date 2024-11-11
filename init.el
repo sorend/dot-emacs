@@ -454,6 +454,18 @@
   (setq magit-display-buffer-function
         'magit-display-buffer-fullframe-status-v1))
 
+(use-package difftastic
+  :demand t
+  :bind (:map magit-blame-read-only-mode-map
+         ("D" . difftastic-magit-show)
+         ("S" . difftastic-magit-show))
+  :config
+  (eval-after-load 'magit-diff
+    '(transient-append-suffix 'magit-diff '(-1 -1)
+       [("D" "Difftastic diff (dwim)" difftastic-magit-diff)
+        ("S" "Difftastic show" difftastic-magit-show)])))
+
+
 (use-package nerd-icons)
 
 (use-package nerd-icons-dired
@@ -891,6 +903,7 @@
                                   :html-background "Transparent"
                                   :html-scale 1.0
                                   :matchers '("begin" "$1" "$" "$$" "\\(" "\\[")))
+  (org-ditaa-jar-path "/usr/share/java/ditaa/ditaa-0.11.jar")
   :config
   (defun sorend/org-grep (&optional initial)
     (interactive "P")
@@ -901,7 +914,8 @@
    'org-babel-load-languages
    '((emacs-lisp . t)
      (shell . t)
-     (python . t)))
+     (python . t)
+     (ditaa . t)))
   (add-hook 'org-mode-hook #'visual-line-mode)
   ;; latex headlines can be ignored
   ;; latex can handle IEEEtran class
