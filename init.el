@@ -460,7 +460,7 @@ The DWIM behaviour of this command is as follows:
         'magit-display-buffer-fullframe-status-v1))
 
 (use-package difftastic
-  :demand t
+  :ensure t
   :bind (:map magit-blame-read-only-mode-map
          ("D" . difftastic-magit-show)
          ("S" . difftastic-magit-show))
@@ -496,6 +496,7 @@ The DWIM behaviour of this command is as follows:
   (dired-make-directory-clickable t))
 
 (use-package dired-single
+  :ensure t
   :after dired)
 
 
@@ -521,6 +522,7 @@ The DWIM behaviour of this command is as follows:
 
 (when (string= system-type "gnu/linux")
   (use-package exec-path-from-shell
+    :ensure t
     :config
     (dolist (shell-variable '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "BROWSER" "CI"
                               "GOPATH" "LANG" "MANPATH" "PATH"))
@@ -564,6 +566,7 @@ The DWIM behaviour of this command is as follows:
 ;; rust programming
 ;;
 (use-package rust-mode
+  :ensure t
   :init
   (add-hook 'rust-mode-hook 'eglot-ensure)
   (add-hook 'rust-ts-mode-hook 'eglot-ensure))
@@ -572,6 +575,7 @@ The DWIM behaviour of this command is as follows:
 ;; Go programming
 ;;
 (use-package go-mode
+  :ensure t
   :init
   (add-hook 'go-mode-hook #'eglot-ensure)
   (add-hook 'go-ts-mode-hook #'eglot-ensure)
@@ -580,11 +584,12 @@ The DWIM behaviour of this command is as follows:
 
 ;; optional if you want which-key integration
 (use-package which-key
-    :config
-    (setq which-key-show-erly-on-C-h t)
-    (setq which-key-idle-delay 3)
-    (setq which-key-idle-secondary-delay 0.05)
-    (which-key-mode))
+  :ensure nil
+  :config
+  (setq which-key-show-erly-on-C-h t)
+  (setq which-key-idle-delay 3)
+  (setq which-key-idle-secondary-delay 0.05)
+  (which-key-mode))
 
 (use-package python-pytest
   :ensure t
@@ -658,9 +663,11 @@ The DWIM behaviour of this command is as follows:
   :custom
   (reftex-cite-prompt-optional-args t))
 
-(use-package cdlatex)
+(use-package cdlatex
+  :ensure t)
 
 (use-package auto-dictionary
+  :ensure t
   :init
   (add-hook 'flyspell-mode-hook (lambda () (auto-dictionary-mode 1))))
 
@@ -734,7 +741,8 @@ The DWIM behaviour of this command is as follows:
     (setq bibtex-align-at-equal-sign t)
     (add-hook 'bibtex-mode-hook (lambda () (set-fill-column 120)))))
 
-(use-package biblio)
+(use-package biblio
+  :ensure t)
 
 ;; (use-package biblio-zotero
 ;;   :straight (biblio-zotero :type git :host github :repo "gkowzan/biblio-zotero")
@@ -777,6 +785,7 @@ The DWIM behaviour of this command is as follows:
 
   ;; use gnus-alias X-Message-SMTP-Header
 (use-package gnus-alias
+  :ensure t
   :if feature-notmuch?
   :custom
   (gnus-alias-identity-alist
