@@ -1,5 +1,13 @@
 ;; init.el --- Emacs configuration
 
+(setq custom-file (locate-user-emacs-file "custom.el"))
+(load custom-file :no-error-if-file-is-missing)
+
+;; no warnings/compile-log
+(add-to-list 'display-buffer-alist
+             '("\\`\\*\\(Warnings\\|Compile-Log\\)\\*\\'"
+               (display-buffer-no-window)
+               (allow-no-window . t)))
 
 ;; load host specifics
 (add-to-list 'load-path "~/.emacs.d/hosts.d/")
@@ -103,6 +111,37 @@
   ;; display time mode on
   ;; (display-time-mode 1)
   )
+
+(use-package delsel
+  ;; :ensure nil ; it is built-in
+  :hook (after-init . delete-selection-mode))
+
+
+(defun sorend/keyboard-quit-dwim ()
+  "Do-What-I-Mean behaviour for a general `keyboard-quit'.
+
+The generic `keyboard-quit' does not do the expected thing when
+the minibuffer is open.  Whereas we want it to close the
+minibuffer, even without explicitly focusing it.
+
+The DWIM behaviour of this command is as follows:
+
+- When the region is active, disable it.
+- When a minibuffer is open, but not focused, close the minibuffer.
+- When the Completions buffer is selected, close it.
+- In every other case use the regular `keyboard-quit'."
+  (interactive)
+  (cond
+   ((region-active-p)
+    (keyboard-quit))
+   ((derived-mode-p 'completion-list-mode)
+    (delete-completion-window))
+   ((> (minibuffer-depth) 0)
+    (abort-recursive-edit))
+   (t
+    (keyboard-quit))))
+
+(define-key global-map (kbd "C-g") #'sorend/keyboard-quit-dwim)
 
 (use-package avy
   :straight t
@@ -343,26 +382,37 @@
     ;; Use TAB for cycling, default is `corfu-complete'.
   :bind
   (:map corfu-map
-        ("M-SPC" . corfu-insert-separator)
-        ("RET" . nil)
-        ("S-<return>" . corfu-insert)
-        ("TAB" . corfu-next)
-        ([tab] . corfu-next)
-        ("S-TAB" . corfu-previous)
-        ([backtab] . corfu-previous))
+        ("<tab>" . corfu-complete))
+        ;; ("M-SPC" . corfu-insert-separator)
+        ;; ("RET" . nil)
+        ;; ("S-<return>" . corfu-insert)
+        ;; ("TAB" . corfu-next)
+        ;; ([tab] . corfu-next)
+        ;; ("S-TAB" . corfu-previous)
+        ;; ([backtab] . corfu-previous))
   :init
   (global-corfu-mode)
-  (corfu-history-mode))
+  (corfu-history-mode)
+  :config
+  (setq tab-always-indent 'complete)
+  (setq corfu-preview-current nil)
+  (setq corfu-min-width 20)
+  (setq corfu-popupinfo-delay '(1.25 . 0.5))
+  (corfu-popupinfo-mode 1)
+  ;; Sort by input history (no need to modify `corfu-sort-function').
+  (with-eval-after-load 'savehist
+    (corfu-history-mode 1)
+    (add-to-list 'savehist-additional-variables 'corfu-history)))
 
 ;; Part of corfu
-(use-package corfu-popupinfo
-  :after corfu
-  :hook (corfu-mode . corfu-popupinfo-mode)
-  :custom
-  (corfu-popupinfo-delay '(0.25 . 0.1))
-  (corfu-popupinfo-hide nil)
-  :config
-  (corfu-popupinfo-mode))
+;; (use-package corfu-popupinfo
+;;   :after corfu
+;;   :hook (corfu-mode . corfu-popupinfo-mode)
+;;   :custom
+;;   (corfu-popupinfo-delay '(0.25 . 0.1))
+;;   (corfu-popupinfo-hide nil)
+;;   :config
+;;   (corfu-popupinfo-mode))
 
 ;; Make corfu popup come up in terminal overlay
 (use-package corfu-terminal
