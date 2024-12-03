@@ -13,34 +13,34 @@
 (add-to-list 'load-path "~/.emacs.d/hosts.d/")
 (require (intern (downcase system-name)))
 
-;; use develop because emacs29 fix is not in master yet
-(setq straight-repository-branch "develop")
+;; ;; use develop because emacs29 fix is not in master yet
+;; (setq straight-repository-branch "develop")
 
-;; Install straight.el
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name
-        "straight/repos/straight.el/bootstrap.el"
-        (or (bound-and-true-p straight-base-dir)
-            user-emacs-directory)))
-      (bootstrap-version 7))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
+;; ;; Install straight.el
+;; (defvar bootstrap-version)
+;; (let ((bootstrap-file
+;;        (expand-file-name
+;;         "straight/repos/straight.el/bootstrap.el"
+;;         (or (bound-and-true-p straight-base-dir)
+;;             user-emacs-directory)))
+;;       (bootstrap-version 7))
+;;   (unless (file-exists-p bootstrap-file)
+;;     (with-current-buffer
+;;         (url-retrieve-synchronously
+;;          "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+;;          'silent 'inhibit-cookies)
+;;       (goto-char (point-max))
+;;       (eval-print-last-sexp)))
+;;   (load bootstrap-file nil 'nomessage))
 
-(setq straight-use-package-by-default t)
-(straight-use-package 'use-package)
+;; (setq straight-use-package-by-default t)
+;; (straight-use-package 'use-package)
 
 ;;
 ;; general configuration features
 ;;
 (use-package emacs
-  :straight (:type built-in)
+  ;; :straight (:type built-in)
   :config
   (when (window-system)
     (menu-bar-mode -1)
@@ -144,14 +144,17 @@ The DWIM behaviour of this command is as follows:
 (define-key global-map (kbd "C-g") #'sorend/keyboard-quit-dwim)
 
 (use-package avy
-  :straight t
+  ;; :straight t
   :bind (("C-c j" . avy-goto-line)
          ("C-S-j"   . avy-goto-char-timer)))
 
 ;; Enable vertico
 (use-package vertico
-  :straight (vertico :files (:defaults "extensions/*")
-                     :includes (vertico-directory))
+  :vc (:url "https://github.com/minad/vertico"
+            :rev :newest
+            :lisp-dir "extensions/")
+  ;; :straight (vertico :files (:defaults "extensions/*")
+  ;;                    :includes (vertico-directory))
   :init
   (vertico-mode)
   :custom
