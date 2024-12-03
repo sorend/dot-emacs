@@ -3,6 +3,11 @@
 (setq custom-file (locate-user-emacs-file "custom.el"))
 (load custom-file :no-error-if-file-is-missing)
 
+(require 'package)
+(package-initialize)
+
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+
 ;; no warnings/compile-log
 (add-to-list 'display-buffer-alist
              '("\\`\\*\\(Warnings\\|Compile-Log\\)\\*\\'"
@@ -13,34 +18,11 @@
 (add-to-list 'load-path "~/.emacs.d/hosts.d/")
 (require (intern (downcase system-name)))
 
-;; ;; use develop because emacs29 fix is not in master yet
-;; (setq straight-repository-branch "develop")
-
-;; ;; Install straight.el
-;; (defvar bootstrap-version)
-;; (let ((bootstrap-file
-;;        (expand-file-name
-;;         "straight/repos/straight.el/bootstrap.el"
-;;         (or (bound-and-true-p straight-base-dir)
-;;             user-emacs-directory)))
-;;       (bootstrap-version 7))
-;;   (unless (file-exists-p bootstrap-file)
-;;     (with-current-buffer
-;;         (url-retrieve-synchronously
-;;          "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-;;          'silent 'inhibit-cookies)
-;;       (goto-char (point-max))
-;;       (eval-print-last-sexp)))
-;;   (load bootstrap-file nil 'nomessage))
-
-;; (setq straight-use-package-by-default t)
-;; (straight-use-package 'use-package)
-
 ;;
 ;; general configuration features
 ;;
 (use-package emacs
-  ;; :straight (:type built-in)
+  :ensure nil
   :config
   (when (window-system)
     (menu-bar-mode -1)
@@ -113,7 +95,7 @@
   )
 
 (use-package delsel
-  ;; :ensure nil ; it is built-in
+  :ensure nil ; it is built-in
   :hook (after-init . delete-selection-mode))
 
 
@@ -143,18 +125,12 @@ The DWIM behaviour of this command is as follows:
 
 (define-key global-map (kbd "C-g") #'sorend/keyboard-quit-dwim)
 
-(use-package avy
-  ;; :straight t
-  :bind (("C-c j" . avy-goto-line)
-         ("C-S-j"   . avy-goto-char-timer)))
-
 ;; Enable vertico
 (use-package vertico
+  :ensure t
   :vc (:url "https://github.com/minad/vertico"
             :rev :newest
             :lisp-dir "extensions/")
-  ;; :straight (vertico :files (:defaults "extensions/*")
-  ;;                    :includes (vertico-directory))
   :init
   (vertico-mode)
   :custom
@@ -162,6 +138,7 @@ The DWIM behaviour of this command is as follows:
 
 (use-package vertico-directory
   :after vertico
+  :ensure nil
   :bind (:map vertico-map
               ("M-DEL" . #'vertico-directory-delete-word)
               ("RET" . #'vertico-directory-enter)
@@ -169,37 +146,35 @@ The DWIM behaviour of this command is as follows:
   :config
   (add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy))
 
-
-
 ;; Persist history over Emacs restarts. Vertico sorts by history position.
 (use-package savehist
+  :ensure nil
   :init
   (savehist-mode))
 
 ;; move-text
 (use-package move-text
+  :ensure t
   :init
   (move-text-default-bindings))
 
 ;; Optionally use the `orderless' completion style.
 (use-package orderless
-  :init
-  ;; Configure a custom style dispatcher (see the Consult wiki)
-  ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
-  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-  (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion)))))
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles basic partial-completion)))))
 
 ;; marginalia shows documentation while completing
 (use-package marginalia
-  :straight t
+  :ensure t
   :after vertico
   :config
   (marginalia-mode))
 
 (use-package embark
-  :straight t
+  :ensure t
   :after (vertico wgrep)
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
@@ -217,6 +192,7 @@ The DWIM behaviour of this command is as follows:
 
 ;; Consult users will also want the embark-consult package.
 (use-package embark-consult
+  :ensure t
   :after (embark consult)
   :demand t ; only necessary if you have the hook below
   ;; if you want to have consult previews as you move around an
@@ -225,7 +201,8 @@ The DWIM behaviour of this command is as follows:
   (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package consult
-  :straight t
+  :ensure t
+  ;; :straight t
   :after (vertico wgrep)
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
@@ -235,44 +212,6 @@ The DWIM behaviour of this command is as follows:
          ([remap switch-to-buffer] . consult-buffer)
          ([remap goto-line] . consult-goto-line)
          ([remap ibuffer] . consult-buffer)
-         ;; ("C-c h" . consult-history)
-         ;; ("C-c m" . consult-mode-command)
-         ;; ("C-c k" . consult-kmacro)
-         ;; ;; C-x bindings (ctl-x-map)
-         ;; ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-         ;; ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-         ;; ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-         ;; ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-         ;; ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
-         ;; ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
-         ;; ;; Custom M-# bindings for fast register access
-         ;; ("M-#" . consult-register-load)
-         ;; ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-         ;; ("C-M-#" . consult-register)
-         ;; ;; Other custom bindings
-         ;; ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-         ;; ("<help> a" . consult-apropos)            ;; orig. apropos-command
-         ;; ;; M-g bindings (goto-map)
-         ;; ("M-g e" . consult-compile-error)
-         ;; ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
-         ;; ("M-g g" . consult-goto-line)             ;; orig. goto-line
-         ;; ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-         ;; ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-         ;; ("M-g m" . consult-mark)
-         ;; ("M-g k" . consult-global-mark)
-         ;; ("M-g i" . consult-imenu)
-         ;; ("M-g I" . consult-imenu-multi)
-         ;; ;; M-s bindings (search-map)
-         ;; ("M-s d" . consult-find)
-         ;; ("M-s D" . consult-locate)
-         ;; ("M-s g" . consult-grep)
-         ;; ("M-s G" . consult-git-grep)
-         ;; ("M-s r" . consult-ripgrep)
-         ;; ("M-s l" . consult-line)
-         ;; ("M-s L" . consult-line-multi)
-         ;; ("M-s m" . consult-multi-occur)
-         ;; ("M-s k" . consult-keep-lines)
-         ;; ("M-s u" . consult-focus-lines)
          ("C-f" . consult-ripgrep)
          ("C-S-f" . consult-find)
          ;; Isearch integration
@@ -351,6 +290,7 @@ The DWIM behaviour of this command is as follows:
 
 ;; Modify search results en masse
 (use-package wgrep
+  :ensure t
   :config
   (setq wgrep-auto-save-buffer t))
 
@@ -358,7 +298,8 @@ The DWIM behaviour of this command is as follows:
 ;;   :config
 ;;   (beacon-mode 1))
 
-(use-package dash)
+(use-package dash
+  :ensure t)
 
 ;; (use-package better-defaults
 ;;   :straight (:host nil :repo "https://github.com/emacsmirror/better-defaults")
@@ -370,8 +311,9 @@ The DWIM behaviour of this command is as follows:
 ;;         `((".*" ,temporary-file-directory t))))
 
 (use-package corfu
-  :straight (corfu :files (:defaults "extensions/*")
-                   :includes (corfu-popupinfo))
+  :ensure t
+  ;; :vc (corfu :files (:defaults "extensions/*")
+  ;;                  :includes (corfu-popupinfo))
   ;; TAB-and-Go customizations
   ;; :custom
   ;; (corfu-cycle t)             ;; Enable cycling for `corfu-next/previous'
@@ -419,6 +361,7 @@ The DWIM behaviour of this command is as follows:
 
 ;; Make corfu popup come up in terminal overlay
 (use-package corfu-terminal
+  :ensure t
   :if (not (display-graphic-p))
   :config
   (corfu-terminal-mode))
@@ -426,27 +369,31 @@ The DWIM behaviour of this command is as follows:
 ;; Fancy completion-at-point functions; there's too much in the cape package to
 ;; configure here; dive in when you're comfortable!
 (use-package cape
+  :ensure t
   :init
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-file))
 
 (use-package nerd-icons-corfu
+  :ensure t
   :after (corfu nerd-icons)
   :config
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
 ;; search improvement
 (use-package ctrlf
+  :ensure t
   :config
   (ctrlf-mode +1))
 
 (use-package rainbow-delimiters
+  :ensure t
   :hook
   (prog-mode . rainbow-delimiters-mode))
 
 ;; setup tramp
 (use-package tramp
-  :straight (:type built-in)
+  ;; :straight (:type built-in)
   :custom
   (tramp-default-method "ssh")
   (tramp-auto-save-directory "~/.cache/tramp-autosave-dir")
@@ -455,12 +402,16 @@ The DWIM behaviour of this command is as follows:
 
 ;; setup ace-window
 (use-package ace-window
+  :ensure t
   :bind ("M-o" . ace-window))
 
 ;; needed for groovy mode
-(use-package cl-lib)
-(use-package groovy-mode)
-(use-package dockerfile-mode)
+(use-package cl-lib
+  :ensure t)
+(use-package groovy-mode
+  :ensure t)
+(use-package dockerfile-mode
+  :ensure t)
 
 
 ;;
@@ -484,7 +435,7 @@ The DWIM behaviour of this command is as follows:
 ;; Flymake configuration
 ;;
 (use-package flymake
-  :straight (:type built-in)
+  ;; :straight (:type built-in)
   :bind
   (("C-c C-1 n" . flymake-goto-next-error)
    ("C-c C-1 p" . flymake-goto-prev-error)))
@@ -499,6 +450,7 @@ The DWIM behaviour of this command is as follows:
 ;; magit configuation
 ;;
 (use-package magit
+  :ensure t
   :bind ("C-x g" . magit-status)
   :config
   ;; disable auto-revert-mode (a bit faster w/o)
@@ -519,20 +471,23 @@ The DWIM behaviour of this command is as follows:
         ("S" "Difftastic show" difftastic-magit-show)])))
 
 
-(use-package nerd-icons)
+(use-package nerd-icons
+  :ensure t)
 
 (use-package nerd-icons-dired
+  :ensure t
   :after dired
   :hook (dired-mode . nerd-icons-dired-mode))
 
 (use-package nerd-icons-completion
+  :ensure t
   :after (marginalia nerd-icons)
   :config
   (nerd-icons-completion-mode)
   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
 (use-package dired
-  :straight (:type built-in)
+  ;; :straight (:type built-in)
   :custom
   (dired-recursive-copies 'always)
   (dired-recursive-deletes 'always)
@@ -552,12 +507,14 @@ The DWIM behaviour of this command is as follows:
 ;;   :bind ("C-c p" . magit-find-file-completing-read))
 
 (use-package emojify
+  :ensure t
   :custom
   (emojify-download-emojis-p t)
   :hook
   (after-init . global-emojify-mode))
 
 (use-package nyan-mode
+  :ensure t
   :config
   (nyan-mode))
 
@@ -572,6 +529,7 @@ The DWIM behaviour of this command is as follows:
 
 ;; spell checking
 (use-package jinx
+  :ensure t
   :hook (emacs-startup . global-jinx-mode)
   :bind (("M-$" . jinx-correct)
          ("C-M-l" . jinx-languages)))
@@ -602,15 +560,6 @@ The DWIM behaviour of this command is as follows:
   (fset #'jsonrpc--log-event #'ignore)  ; massive perf boost---don't log every event
   )
 
-;; (use-package ledger-mode)
-
-;; (use-package beancount
-;;   :straight (beancount-mode
-;;              :type git
-;;              :host github
-;;              :repo "beancount/beancount-mode"))
-
-
 ;;
 ;; rust programming
 ;;
@@ -638,6 +587,7 @@ The DWIM behaviour of this command is as follows:
     (which-key-mode))
 
 (use-package python-pytest
+  :ensure t
   :after python
   :bind
   (("C-c t" . python-pytest-dispatch))
@@ -654,19 +604,23 @@ The DWIM behaviour of this command is as follows:
 ;; Misc file editing modes
 ;;
 (use-package markdown-mode
+  :ensure t
   :hook
   (markdown-mode . visual-line-mode)
   :init
   (setq markdown-command "multimarkdown"))
 
 (use-package markdown-preview-mode
+  :ensure t
   :after markdown-mode)
 
 ;; yaml
-(use-package yaml-mode)
+(use-package yaml-mode
+  :ensure t)
 
 ;; toml
-(use-package toml-mode)
+(use-package toml-mode
+  :ensure t)
 
 ;;
 ;; LaTeX setup
@@ -676,6 +630,7 @@ The DWIM behaviour of this command is as follows:
 ;;
 
 (use-package pdf-tools
+  :ensure t
   :custom
   (pdf-view-display-size 'fit-page)
   (pdf-annot-activate-created-annotations t)
@@ -691,6 +646,7 @@ The DWIM behaviour of this command is as follows:
 ;  (define-key pdf-view-mode-map (kbd "C-r") 'isearch-backward))
 
 (use-package auctex-latexmk
+  :ensure t
   :after (tex-site tex-buf)
   :custom
   (auctex-latexmk-inherit-TeX-PDF-mode t)
@@ -715,7 +671,8 @@ The DWIM behaviour of this command is as follows:
 ;;   :init (company-auctex-init))
 
 (use-package tex-site
-  :straight auctex
+  ;; :straight auctex
+  :ensure auctex
   :commands (latex-mode LaTeX-mode plain-tex-mode)
   :config
   (setq TeX-source-correlate-mode t
@@ -779,9 +736,9 @@ The DWIM behaviour of this command is as follows:
 
 (use-package biblio)
 
-(use-package biblio-zotero
-  :straight (biblio-zotero :type git :host github :repo "gkowzan/biblio-zotero")
-  :commands (biblio-zotero-insert-bibtex))
+;; (use-package biblio-zotero
+;;   :straight (biblio-zotero :type git :host github :repo "gkowzan/biblio-zotero")
+;;   :commands (biblio-zotero-insert-bibtex))
 
 (use-package parsebib)
 
@@ -798,7 +755,8 @@ The DWIM behaviour of this command is as follows:
 
 ;; functions to setup
 (use-package notmuch
-  :straight (:host github :repo "notmuch/notmuch")
+  :vc (:url "https://github.com/notmuch/notmuch" :rev :newest)
+  ;; :straight (:host github :repo "notmuch/notmuch")
   :if feature-notmuch?
   :after message gnus-alias
   :custom
@@ -844,7 +802,7 @@ The DWIM behaviour of this command is as follows:
 
 ;; allow to switch identity while writing mail
 (use-package message
-  :straight (:type built-in)
+  ;; :straight (:type built-in)
   :if feature-notmuch?
   :bind
   (:map message-mode-map
@@ -859,7 +817,8 @@ The DWIM behaviour of this command is as follows:
 
 ;; notmuch-x
 (use-package notmuch-x
-  :straight (notmuch-x :host github :repo "bcardoso/notmuch-x")
+  ;; :straight (notmuch-x :host github :repo "bcardoso/notmuch-x")
+  :vc (:url "https://github.com/bcardoso/notmuch-x" :rev :newest)
   :if feature-notmuch?
   :after notmuch
   :custom
@@ -935,7 +894,7 @@ The DWIM behaviour of this command is as follows:
 ;; org related configuration
 ;;
 (use-package org
-  :straight (:type built-in)
+  ;; :straight (:type built-in)
   :demand t
   :custom
   (org-startup-indented t)
@@ -985,7 +944,8 @@ The DWIM behaviour of this command is as follows:
   (("C-c n c" . org-capture)
    ("C-c n f" . sorend/org-grep)))
 
-(let* ((variable-tuple
+(when window-system
+  (let* ((variable-tuple
           (cond ((x-list-fonts "ETBembo") '(:font "ETBembo"))
                 ((x-list-fonts "EB Garamond") '(:font "EB Garamond"))
                 (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
@@ -1001,20 +961,23 @@ The DWIM behaviour of this command is as follows:
      `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.25))))
      `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.5))))
      `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.75))))
-     `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil))))))
+     `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil)))))))
 
 
 (use-package org-contrib
+  :ensure t
   :after org
   :config
   (require 'ox-extra)
   (ox-extras-activate '(ignore-headlines)))
 
 (use-package org-appear
+  :ensure t
   :after org
   :hook (org-mode . org-appear-mode))
 
 (use-package org-modern
+  :ensure t
   :after org
   :config
   (global-org-modern-mode))
@@ -1044,6 +1007,7 @@ The DWIM behaviour of this command is as follows:
 
 ;; org-present
 (use-package org-present
+  :ensure t
   :after org
   :hook
   (org-present-mode . (lambda ()
@@ -1060,6 +1024,7 @@ The DWIM behaviour of this command is as follows:
                              (org-present-read-write))))
 
 (use-package citar
+  :ensure t
   :after org
   :bind
   (:map org-mode-map
@@ -1076,6 +1041,7 @@ The DWIM behaviour of this command is as follows:
   (require 'oc-biblatex))
 
 (use-package citar-embark
+  :ensure t
   :after citar embark
   :no-require
   :config (citar-embark-mode))
@@ -1103,7 +1069,9 @@ The DWIM behaviour of this command is as follows:
 
 
 (use-package 1password
-  :straight '(1password :host github :repo "justinbarclay/1password.el" :branch "main")
+  :ensure t
+  ;; :straight '(1password :host github :repo "justinbarclay/1password.el" :branch "main")
+  :vc (:url "https://github.com/justinbarclay/1password.el" :rev :newest)
   :if feature-1password?
   :init
   (1password-enable-auth-source))
@@ -1111,7 +1079,8 @@ The DWIM behaviour of this command is as follows:
   ;; ((1password-results-formatter . '1password-colour-formatter)))
 
 
-(use-package gptel)
+(use-package gptel
+  :ensure t)
 
 
 ;; (use-package calfw)
@@ -1136,5 +1105,4 @@ The DWIM behaviour of this command is as follows:
 (find-file (expand-file-name "welcome.org" my-org-directory))
 
 ;; Local Variables:
-;; jinx-local-words: "linux"
 ;; End:
