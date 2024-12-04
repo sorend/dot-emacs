@@ -1,8 +1,5 @@
 ;; init.el --- Emacs configuration
 
-(setq custom-file (locate-user-emacs-file "custom.el"))
-(load custom-file :no-error-if-file-is-missing)
-
 (require 'package)
 (package-initialize)
 
@@ -17,6 +14,23 @@
 ;; load host specifics
 (add-to-list 'load-path "~/.emacs.d/hosts.d/")
 (require (intern (downcase system-name)))
+
+;; configure custom file
+(use-package cus-edit
+  :ensure nil
+  :custom
+  (custom-file (locate-user-emacs-file "custom.el"))
+  :init
+  (load custom-file :no-error-if-file-is-missing))
+
+(use-package auto-package-update
+  :custom
+  (auto-package-update-interval 7)
+  (auto-package-update-prompt-before-update t)
+  (auto-package-update-hide-results t)
+  :config
+  (auto-package-update-maybe))
+  ;; (auto-package-update-at-time "09:00"))
 
 ;;
 ;; general configuration features
@@ -497,6 +511,7 @@ The DWIM behaviour of this command is as follows:
 
 (use-package dired-single
   :ensure t
+  :vc (:url "https://codeberg.org/amano.kenji/dired-single" :rev :newest)
   :after dired)
 
 
