@@ -24,6 +24,7 @@
   (load custom-file :no-error-if-file-is-missing))
 
 (use-package auto-package-update
+  :ensure t
   :custom
   (auto-package-update-interval 7)
   (auto-package-update-prompt-before-update t)
@@ -779,7 +780,6 @@ The DWIM behaviour of this command is as follows:
 ;; functions to setup
 (use-package notmuch
   :vc (:url "https://github.com/notmuch/notmuch" :rev :newest)
-  ;; :straight (:host github :repo "notmuch/notmuch")
   :if feature-notmuch?
   :after message gnus-alias
   :custom
@@ -1090,6 +1090,7 @@ The DWIM behaviour of this command is as follows:
       (insert clip)
       (if arg (kill-new clip)))))
 
+(use-package fish-mode)
 
 
 (use-package 1password
@@ -1105,6 +1106,12 @@ The DWIM behaviour of this command is as follows:
 
 (use-package gptel
   :ensure t)
+
+
+(defun crontab-e ()
+    "Run `crontab -e' in a emacs buffer."
+    (interactive)
+    (with-editor-async-shell-command "crontab -e"))
 
 
 ;; (use-package calfw)
