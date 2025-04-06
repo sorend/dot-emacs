@@ -566,9 +566,10 @@ The DWIM behaviour of this command is as follows:
 (use-package eglot
   :bind (:map eglot-mode-map
               ("C-c a r" . #'eglot-rename)
-              ("C-<down-mouse-1>" . #'xref-find-definitions)
-              ("C-c b" . #'xref-go-back)
-              ("C-S-<down-mouse-1>" . #'xref-find-references)
+              ("C-c g d" . #'xref-find-definitions)
+              ("C-c b"   . #'xref-go-back)
+              ("C-c g r" . #'xref-find-references)
+              ("C-c q"   . #'eldoc)
               ("C-c C-c" . #'eglot-code-actions))
   :custom
   (eglot-send-changes-idle-time 0.1)
@@ -776,6 +777,8 @@ The DWIM behaviour of this command is as follows:
 
 (unless (boundp 'my-org-directory)
   (setq my-org-directory (expand-file-name "~/Mega/notes/")))
+
+(setq my-org-download-directory (file-name-concat my-org-directory "images"))
 
 ;; functions to setup
 (use-package notmuch
@@ -1107,6 +1110,15 @@ The DWIM behaviour of this command is as follows:
 (use-package gptel
   :ensure t)
 
+;; (use-package aidermacs
+;;   :vc (:url "https://github.com/MatthewZMD/aidermacs" :rev :newest :main-file "aidermacs.el")
+;;   :config
+;;   ;; (setq aidermacs-args '("--model" "anthropic/claude-3-5-sonnet-20241022"))
+;;   (setq aidermacs-args '("--deepseek"))
+;;   ;; (setenv "ANTHROPIC_API_KEY" anthropic-api-key)
+;;   (setenv "DEEPSEEK_API_KEY" (auth-source-pick-first-password :host "platform.deeseek.com" :user "sorend@gmail.com"))
+;;   (global-set-key (kbd "C-c C-a") 'aidermacs-transient-menu))
+
 
 (defun crontab-e ()
     "Run `crontab -e' in a emacs buffer."
@@ -1128,6 +1140,18 @@ The DWIM behaviour of this command is as follows:
 ;;       (cfw:ical-create-source "IN" "https://www.officeholidays.com/ics/india" "IndianRed")
 ;;       ))))
 
+(use-package denote
+  :ensure t
+  :bind
+  (("C-c d" . denote-open-or-create))
+  :custom
+  (denote-directory my-org-directory))
+
+(use-package org-download
+  :after org
+  :ensure t
+  :custom
+  (org-download-image-dir nil))  ;; my-org-download-directory))
 
 
 ;;
