@@ -485,6 +485,14 @@ The DWIM behaviour of this command is as follows:
        [("D" "Difftastic diff (dwim)" difftastic-magit-diff)
         ("S" "Difftastic show" difftastic-magit-show)])))
 
+;; add forges
+(use-package forge
+  :ensure t
+  :after magit
+  ;; :config
+  )
+
+
 
 (use-package nerd-icons
   :ensure t)
@@ -1151,6 +1159,7 @@ The DWIM behaviour of this command is as follows:
   :after org
   :ensure t
   :custom
+  (org-download-screenshot-method "grim -g $(slurp) %s")
   (org-download-image-dir nil))  ;; my-org-download-directory))
 
 
