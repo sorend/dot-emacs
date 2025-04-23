@@ -1,6 +1,6 @@
 
 (setq feature-notmuch? nil)
-(setq feature-1password? t)
+(setq feature-1password? nil)
 (setq feature-wsl? t)
 
 (setq my-org-directory (expand-file-name "~/projects/denotes/"))
