@@ -100,7 +100,7 @@
   (global-set-key (kbd "<f5>") 'revert-buffer)
   ;; theme
   ;; (load-theme 'modus-vivendi t)
-  (load-theme 'modus-operandi-tinted t)
+  (load-theme 'modus-vivendi-tinted t)
   (setq modus-themes-org-blocks 'tinted)
   ;; yes/no -> y/n
   (defalias 'yes-or-no-p 'y-or-n-p)
