@@ -1162,6 +1162,10 @@ The DWIM behaviour of this command is as follows:
   (org-download-screenshot-method "grim -g $(slurp) %s")
   (org-download-image-dir nil))  ;; my-org-download-directory))
 
+(use-package flymake-ruff
+  :ensure t
+  :hook (eglot-managed-mode . flymake-ruff-load))
+
 
 ;;
 ;; welcome startup
