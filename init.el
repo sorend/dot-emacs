@@ -587,6 +587,10 @@ The DWIM behaviour of this command is as follows:
   (fset #'jsonrpc--log-event #'ignore)  ; massive perf boost---don't log every event
   )
 
+(use-package uv-mode
+  :ensure t
+  :hook (python-mode . uv-mode-auto-activate-hook))
+
 ;;
 ;; rust programming
 ;;
