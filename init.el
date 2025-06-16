@@ -15,6 +15,10 @@
 (add-to-list 'load-path "~/.emacs.d/hosts.d/")
 (require (intern (downcase system-name)))
 
+;; required for magit
+;; (use-package transient :ensure t)
+
+
 ;; configure custom file
 (use-package cus-edit
   :ensure nil
@@ -108,6 +112,7 @@
   ;; display time mode on
   ;; (display-time-mode 1)
   )
+
 
 (use-package delsel
   :ensure nil ; it is built-in
@@ -483,7 +488,10 @@ The DWIM behaviour of this command is as follows:
   (eval-after-load 'magit-diff
     '(transient-append-suffix 'magit-diff '(-1 -1)
        [("D" "Difftastic diff (dwim)" difftastic-magit-diff)
-        ("S" "Difftastic show" difftastic-magit-show)])))
+        ("S" "Difftastic show" difftastic-magit-show)]))
+  :custom
+  (transient-common-command-prefix 'C-t')
+  )
 
 ;; add forges
 (use-package forge
