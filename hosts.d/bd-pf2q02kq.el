@@ -5,4 +5,7 @@
 
 (setq my-org-directory (expand-file-name "~/projects/denotes/"))
 
+(setq feature-gptel-copilot? t)
+(setq feature-mcp? nil)
+
 (provide 'bd-pf2q02kq)

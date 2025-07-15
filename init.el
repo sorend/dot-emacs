@@ -16,7 +16,7 @@
 (require (intern (downcase system-name)))
 
 ;; required for magit
-;; (use-package transient :ensure t)
+(use-package transient :ensure t)
 
 
 ;; configure custom file
@@ -479,19 +479,19 @@ The DWIM behaviour of this command is as follows:
   (setq magit-display-buffer-function
         'magit-display-buffer-fullframe-status-v1))
 
-(use-package difftastic
-  :ensure t
-  :bind (:map magit-blame-read-only-mode-map
-         ("D" . difftastic-magit-show)
-         ("S" . difftastic-magit-show))
-  :config
-  (eval-after-load 'magit-diff
-    '(transient-append-suffix 'magit-diff '(-1 -1)
-       [("D" "Difftastic diff (dwim)" difftastic-magit-diff)
-        ("S" "Difftastic show" difftastic-magit-show)]))
-  :custom
-  (transient-common-command-prefix 'C-t')
-  )
+;; (use-package difftastic
+;;   :ensure t
+;;   :bind (:map magit-blame-read-only-mode-map
+;;          ("D" . difftastic-magit-show)
+;;          ("S" . difftastic-magit-show))
+;;   :config
+;;   (eval-after-load 'magit-diff
+;;     '(transient-append-suffix 'magit-diff '(-1 -1)
+;;        [("D" "Difftastic diff (dwim)" difftastic-magit-diff)
+;;         ("S" "Difftastic show" difftastic-magit-show)]))
+;;   ;; :custom
+;;   ;; (transient-common-command-prefix 'C-t)
+;;   )
 
 ;; add forges
 (use-package forge
@@ -593,6 +593,13 @@ The DWIM behaviour of this command is as follows:
   (eglot-autoshutdown t)
   :config
   (fset #'jsonrpc--log-event #'ignore)  ; massive perf boost---don't log every event
+
+  (defun sorend/replace-alist-value (alist key new-value)
+    (cl-subst (cons key new-value) (assoc key alist) alist))
+
+  (setq eglot-server-programs (sorend/replace-alist-value eglot-server-programs '(yaml-ts-mode yaml-mode)
+                                                          (eglot-alternatives '(("yaml-language-server" "--stdio")
+                                                                                ("npx" "-y" "@ansible/ansible-language-server" "--stdio")))))
   )
 
 (use-package uv-mode
@@ -1126,18 +1133,95 @@ The DWIM behaviour of this command is as follows:
   ;; :custom
   ;; ((1password-results-formatter . '1password-colour-formatter)))
 
+;; get absolute list of files in the current project
+(defun sorend/list-project-files ()
+  (let* ((project (project-current))
+         (root (and project (project-root project))))
+    (when root
+      (mapcar (lambda (file)
+                (expand-file-name file root))
+              (project-files project)))))
+
+(defun sorend/search-project-files (search-str)
+  "Return a list of full paths to files in the current project containing SEARCH-STR."
+  (let* ((project (project-current t))
+         (root (project-root project))
+         (files (project-files project))
+         (matching-files
+          (cl-remove-if-not
+           (lambda (file)
+             (let ((fullpath (expand-file-name file root)))
+               (when (file-readable-p fullpath)
+                 (with-temp-buffer
+                   (insert-file-contents fullpath)
+                   (search-forward search-str nil t)))))
+           files)))
+    (mapcar (lambda (file) (expand-file-name file root)) matching-files)))
+
 
 (use-package gptel
-  :ensure t)
+  :ensure t
+  :bind
+  (("C-c g RET" . gptel-send)
+   ("C-c g c" . gptel)
+   ("C-c g m" . gptel-menu))
+  :config
+  (if feature-gptel-copilot?
+      (setq gptel-backend (gptel-make-gh-copilot "Copilot"))
+    (setq gptel-backend (gptel-make-gemini "Gemini" :key (auth-source-pick-first-password :host "generativelanguage.googleapis.com" :user "sorend@gmail.com^api-key") :stream t)
+          gptel-model 'gemini-2.5-flash-preview-05-20))
+
+  ;; integrations
+  (require 'gptel-integrations)
+
+  (gptel-make-tool
+   :function #'sorend/search-project-files
+   :name "search-project-files"
+   :description "Search files in the current project that contain a string. Returns list of filepaths that can be read with 'read_file'."
+   :category "project"
+   :include t)
+
+  (gptel-make-tool
+   :function #'sorend/list-project-files
+   :name "list-project-files"
+   :description "List all files in the current project. Returns a list of filepaths that can be read with 'read_file'."
+   :category "project"
+   :include t)
+
+  (gptel-make-tool
+   :function (lambda (filepath)
+               (with-temp-buffer
+                 (insert-file-contents (expand-file-name filepath))
+                 (buffer-string)))
+   :name "read_file"
+   :description "Read the contents of a file."
+   :args (list '(:name "filepath"
+                       :type string
+                       :description "Path to the file to read. Supports relative paths and ~."))
+   :category "filesystem"
+   :include t)
+
+)
+
+(use-package mcp
+  :ensure t
+  :after gptel
+  :if feature-mcp?
+  :custom
+  (mcp-hub-servers `(("github" . (:command "npx" :args ("-y" "supergateway" "--sse" "https://api.githubcopilot.com/mcp/" "--oauth2Bearer" (auth-source-pick-first-password :host "api.github.com" :user "sorend@gmail.com^forge"))))
+                     ("searx" . (:command "npx" :args ("-y" "@kevinwatt/mcp-server-seearxng"))))))
 
 ;; (use-package aidermacs
+;;   :ensure t
 ;;   :vc (:url "https://github.com/MatthewZMD/aidermacs" :rev :newest :main-file "aidermacs.el")
 ;;   :config
-;;   ;; (setq aidermacs-args '("--model" "anthropic/claude-3-5-sonnet-20241022"))
-;;   (setq aidermacs-args '("--deepseek"))
-;;   ;; (setenv "ANTHROPIC_API_KEY" anthropic-api-key)
-;;   (setenv "DEEPSEEK_API_KEY" (auth-source-pick-first-password :host "platform.deeseek.com" :user "sorend@gmail.com"))
-;;   (global-set-key (kbd "C-c C-a") 'aidermacs-transient-menu))
+;;   (setq aidermacs-args '("--model" "openai/claude-sonnet-4")) ;; OPENAI_BASE_URL is set to copilot
+;;   (setenv "OPENAI_API_KEY" (auth-source-pick-first-password :host "api.githubcopilot.com" :user "sad_bankdata^token"))
+;;   (setenv "OPENAI_API_BASE" "https://api.githubcopilot.com")
+;;   (global-set-key (kbd "C-c a") 'aidermacs-transient-menu))
+
+;; (add-to-list 'load-path "~/.emacs.d/")
+;; (require 'sorend/gptel-tools)
 
 
 (defun crontab-e ()
@@ -1177,6 +1261,10 @@ The DWIM behaviour of this command is as follows:
 (use-package flymake-ruff
   :ensure t
   :hook (eglot-managed-mode . flymake-ruff-load))
+
+(use-package ansible
+  :ensure t
+  )
 
 
 ;;
