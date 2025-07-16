@@ -145,6 +145,12 @@ The DWIM behaviour of this command is as follows:
 
 (define-key global-map (kbd "C-g") #'sorend/keyboard-quit-dwim)
 
+
+;; (use-package gptel-got
+;;   :after gptel
+;;   :ensure t
+;;   :vc (:url "https://codeberg.org/bajsicki/gptel-got" :rev :newest))
+
 ;; Enable vertico
 (use-package vertico
   :ensure t
@@ -1171,7 +1177,16 @@ The DWIM behaviour of this command is as follows:
     (setq gptel-backend (gptel-make-gemini "Gemini" :key (auth-source-pick-first-password :host "generativelanguage.googleapis.com" :user "sorend@gmail.com^api-key") :stream t)
           gptel-model 'gemini-2.5-flash-preview-05-20))
 
-  ;; integrations
+  (setq gptel-default-mode 'org-mode
+        gptel-expert-commands t
+        gptel-track-media t
+        gptel-include-reasoning 'ignore
+        gptel-log-level 'info)
+
+  ;; defer nothing
+  (require 'gptel)
+  (require 'gptel-curl)
+  (require 'gptel-transient)
   (require 'gptel-integrations)
 
   (gptel-make-tool
@@ -1205,11 +1220,19 @@ The DWIM behaviour of this command is as follows:
 
 (use-package mcp
   :ensure t
-  :after gptel
+  :after gptel  ;; startup when gptel is started
   :if feature-mcp?
   :custom
-  (mcp-hub-servers `(("github" . (:command "npx" :args ("-y" "supergateway" "--sse" "https://api.githubcopilot.com/mcp/" "--oauth2Bearer" (auth-source-pick-first-password :host "api.github.com" :user "sorend@gmail.com^forge"))))
-                     ("searx" . (:command "npx" :args ("-y" "@kevinwatt/mcp-server-seearxng"))))))
+  (mcp-hub-servers `(("github" . (:command "docker" :args ("run" "--rm" "-i" "-e" ,(format "GITHUB_PERSONAL_ACCESS_TOKEN=%s" (auth-source-pick-first-password :host "api.github.com" :user "sorend@gmail.com^mcp-token")) "ghcr.io/github/github-mcp-server")))
+                     ("brave" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-brave-search") :env (:BRAVE_API_KEY ,(auth-source-pick-first-password :host "api.search.brave.com" :user "soren@hamisoke.com^api-key"))))
+                     ;; ("searx" . (:command "npx" :args ("-y" "@kevinwatt/mcp-server-searxng")))
+                     ))
+  :config
+  (require 'mcp-hub)
+  :hook
+  ((after-init . mcp-hub-start-all-server)
+   (kill-emacs-hook . mcp-hub-close-all-server))
+  )
 
 ;; (use-package aidermacs
 ;;   :ensure t
