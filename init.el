@@ -483,21 +483,8 @@ The DWIM behaviour of this command is as follows:
   (magit-auto-revert-mode 0)
   ;; display the magit in a full screen buffer
   (setq magit-display-buffer-function
-        'magit-display-buffer-fullframe-status-v1))
-
-;; (use-package difftastic
-;;   :ensure t
-;;   :bind (:map magit-blame-read-only-mode-map
-;;          ("D" . difftastic-magit-show)
-;;          ("S" . difftastic-magit-show))
-;;   :config
-;;   (eval-after-load 'magit-diff
-;;     '(transient-append-suffix 'magit-diff '(-1 -1)
-;;        [("D" "Difftastic diff (dwim)" difftastic-magit-diff)
-;;         ("S" "Difftastic show" difftastic-magit-show)]))
-;;   ;; :custom
-;;   ;; (transient-common-command-prefix 'C-t)
-;;   )
+        'magit-display-buffer-fullframe-status-v1)
+  (setq magit-fetch-arguments '("--prune"))
 
 ;; add forges
 (use-package forge
@@ -505,8 +492,6 @@ The DWIM behaviour of this command is as follows:
   :after magit
   ;; :config
   )
-
-
 
 (use-package nerd-icons
   :ensure t)
