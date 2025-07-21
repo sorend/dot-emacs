@@ -1139,30 +1139,13 @@ The DWIM behaviour of this command is as follows:
   ;; :custom
   ;; ((1password-results-formatter . '1password-colour-formatter)))
 
-;; get absolute list of files in the current project
-(defun sorend/list-project-files ()
-  (let* ((project (project-current))
-         (root (and project (project-root project))))
-    (when root
-      (mapcar (lambda (file)
-                (expand-file-name file root))
-              (project-files project)))))
-
-(defun sorend/search-project-files (search-str)
-  "Return a list of full paths to files in the current project containing SEARCH-STR."
-  (let* ((project (project-current t))
-         (root (project-root project))
-         (files (project-files project))
-         (matching-files
-          (cl-remove-if-not
-           (lambda (file)
-             (let ((fullpath (expand-file-name file root)))
-               (when (file-readable-p fullpath)
-                 (with-temp-buffer
-                   (insert-file-contents fullpath)
-                   (search-forward search-str nil t)))))
-           files)))
-    (mapcar (lambda (file) (expand-file-name file root)) matching-files)))
+(use-package macher
+  :vc (:url "https://github.com/kmontag/macher" :rev :newest)
+  :ensure t
+  :custom
+  ;; The org UI has structured navigation and nice content folding.
+  (macher-action-buffer-ui 'org)
+  )
 
 
 (use-package gptel
@@ -1170,18 +1153,30 @@ The DWIM behaviour of this command is as follows:
   :bind
   (("C-c g RET" . gptel-send)
    ("C-c g c" . gptel)
-   ("C-c g m" . gptel-menu))
+   ("C-c g m" . gptel-menu)
+   ("C-c g x" . gptel-abort)
+   ("C-c g a" . gptel-add-file))
+
   :config
-  (if feature-gptel-copilot?
-      (setq gptel-backend (gptel-make-gh-copilot "Copilot"))
-    (setq gptel-backend (gptel-make-gemini "Gemini" :key (auth-source-pick-first-password :host "generativelanguage.googleapis.com" :user "sorend@gmail.com^api-key") :stream t)
-          gptel-model 'gemini-2.5-flash-preview-05-20))
+  ;; (when feature-gptel-copilot?
+  ;;   (gptel-make-gh-copilot "Copilot"))
+
+  ;; (when feature-gptel-gemini?
+  ;;   (gptel-make-gemini "Gemini" :key (auth-source-pick-first-password :host "generativelanguage.googleapis.com" :user "sorend@gmail.com^api-key") :stream t))
+
+  (setq gptel-backend (gptel-make-gh-copilot "Copilot"))
 
   (setq gptel-default-mode 'org-mode
         gptel-expert-commands t
         gptel-track-media t
         gptel-include-reasoning 'ignore
-        gptel-log-level 'info)
+        gptel-log-level 'info
+        gptel-include-tool-results t)
+
+  ;; scroll
+  (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll)
+  ;; goto next response
+  (add-hook 'gptel-post-response-functions 'gptel-end-of-response)
 
   ;; defer nothing
   (require 'gptel)
@@ -1189,34 +1184,18 @@ The DWIM behaviour of this command is as follows:
   (require 'gptel-transient)
   (require 'gptel-integrations)
 
-  (gptel-make-tool
-   :function #'sorend/search-project-files
-   :name "search-project-files"
-   :description "Search files in the current project that contain a string. Returns list of filepaths that can be read with 'read_file'."
-   :category "project"
-   :include t)
+  (macher-install))
 
-  (gptel-make-tool
-   :function #'sorend/list-project-files
-   :name "list-project-files"
-   :description "List all files in the current project. Returns a list of filepaths that can be read with 'read_file'."
-   :category "project"
-   :include t)
+;; (use-package workspace-tools
+;;   :ensure nil
+;;   :load-path "~/.emacs.d/lisp/"
+;;   :after (project gptel)
+;;   :custom
+;;   (workspace-tools-respect-ignores t)
+;;   (workspace-tools-max-files 1000)
+;;   :config
+;;   (workspace-tools-register-gptel-tools))
 
-  (gptel-make-tool
-   :function (lambda (filepath)
-               (with-temp-buffer
-                 (insert-file-contents (expand-file-name filepath))
-                 (buffer-string)))
-   :name "read_file"
-   :description "Read the contents of a file."
-   :args (list '(:name "filepath"
-                       :type string
-                       :description "Path to the file to read. Supports relative paths and ~."))
-   :category "filesystem"
-   :include t)
-
-)
 
 (use-package mcp
   :ensure t
@@ -1224,15 +1203,18 @@ The DWIM behaviour of this command is as follows:
   :if feature-mcp?
   :custom
   (mcp-hub-servers `(("github" . (:command "docker" :args ("run" "--rm" "-i" "-e" ,(format "GITHUB_PERSONAL_ACCESS_TOKEN=%s" (auth-source-pick-first-password :host "api.github.com" :user "sorend@gmail.com^mcp-token")) "ghcr.io/github/github-mcp-server")))
-                     ("brave" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-brave-search") :env (:BRAVE_API_KEY ,(auth-source-pick-first-password :host "api.search.brave.com" :user "soren@hamisoke.com^api-key"))))
-                     ;; ("searx" . (:command "npx" :args ("-y" "@kevinwatt/mcp-server-searxng")))
+                     ;; ("brave" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-brave-search") :env (:BRAVE_API_KEY ,(auth-source-pick-first-password :host "api.search.brave.com" :user "soren@hamisoke.com^api-key"))))
+                     ("context7" . (:command "npx" :args ("-y" "@upstash/context7-mcp@latest")))
+                     ("searx" . (:command "npx" :args ("-y" "@kevinwatt/mcp-server-searxng") :env (:SEARXNG_INSTANCES "https://searxng.ayu-banana.ts.net,https://searx.perennialte.ch,https://searx.oloke.xyz")))
                      ))
   :config
   (require 'mcp-hub)
+  ;; shutdown mcp servers when emacs is going to exit (i.e. don't ask to kill mcp processes)
+  (advice-add #'save-buffers-kill-terminal :before #'mcp-hub-close-all-server)
   :hook
-  ((after-init . mcp-hub-start-all-server)
-   (kill-emacs-hook . mcp-hub-close-all-server))
+  (after-init . mcp-hub-start-all-server)
   )
+
 
 ;; (use-package aidermacs
 ;;   :ensure t
