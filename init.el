@@ -484,7 +484,7 @@ The DWIM behaviour of this command is as follows:
   ;; display the magit in a full screen buffer
   (setq magit-display-buffer-function
         'magit-display-buffer-fullframe-status-v1)
-  (setq magit-fetch-arguments '("--prune"))
+  (setq magit-fetch-arguments '("--prune")))
 
 ;; add forges
 (use-package forge
