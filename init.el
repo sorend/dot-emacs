@@ -962,6 +962,7 @@ The DWIM behaviour of this command is as follows:
                                   :matchers '("begin" "$1" "$" "$$" "\\(" "\\[")))
   (org-ditaa-jar-path "/usr/share/java/ditaa/ditaa-0.11.jar")
   :config
+  (add-hook 'org-mode-hook (lambda () (hl-line-mode -1)))
   (defun sorend/org-grep (&optional initial)
     (interactive "P")
     (consult-ripgrep org-directory initial))
@@ -1155,6 +1156,7 @@ The DWIM behaviour of this command is as follows:
         gptel-expert-commands t
         gptel-track-media t
         gptel-include-reasoning 'ignore
+        gptel-model 'gpt-5
         gptel-log-level 'info
         gptel-include-tool-results t)
 
@@ -1170,6 +1172,16 @@ The DWIM behaviour of this command is as follows:
   (require 'gptel-integrations)
 
   (macher-install))
+
+(use-package gptel-prompts
+  :vc (:url "https://github.com/jwiegley/gptel-prompts.git" :rev :newest)
+  :after (gptel)
+  :ensure t
+  :demand t
+  :config
+  (gptel-prompts-update)
+  ;; Ensure prompts are updated if prompt files change
+  (gptel-prompts-add-update-watchers))
 
 ;; (use-package workspace-tools
 ;;   :ensure nil
