@@ -65,7 +65,8 @@
   ;; (add-function :after after-focus-change-function 'garbage-collect)
 
   (windmove-default-keybindings)
-  (global-hl-line-mode)
+  (global-hl-line-mode 1)
+
   (auto-fill-mode -1)
   (global-display-line-numbers-mode 1)
 
@@ -962,7 +963,9 @@ The DWIM behaviour of this command is as follows:
                                   :matchers '("begin" "$1" "$" "$$" "\\(" "\\[")))
   (org-ditaa-jar-path "/usr/share/java/ditaa/ditaa-0.11.jar")
   :config
-  (add-hook 'org-mode-hook (lambda () (hl-line-mode -1)))
+  ;; (add-hook 'org-mode-hook (lambda () (progn
+  ;;                                       (message "Disabling hl-line-mode for org-mode")
+  ;;                                       (hl-line-mode -1))))
   (defun sorend/org-grep (&optional initial)
     (interactive "P")
     (consult-ripgrep org-directory initial))
@@ -975,6 +978,17 @@ The DWIM behaviour of this command is as follows:
      (python . t)
      (ditaa . t)))
   (add-hook 'org-mode-hook #'visual-line-mode)
+
+  (require 'color)
+  (defun my/brighten-hl-line-foreground ()
+    "Make the hl-line foreground brighter in terminal, keeping background as-is."
+    (unless (display-graphic-p) ;; only for TTY
+      (let* ((current-fg (face-foreground 'hl-line nil t))
+             ;; brighten the color by 40% (factor between 0 and 1)
+             (bright-fg (color-lighten-name (or current-fg "white") 40)))
+        (set-face-foreground 'hl-line bright-fg))))
+  (add-hook 'org-mode-hook #'my/brighten-hl-line-foreground)
+
   ;; latex headlines can be ignored
   ;; latex can handle IEEEtran class
   (with-eval-after-load 'ox-latex
