@@ -65,7 +65,8 @@
   ;; (add-function :after after-focus-change-function 'garbage-collect)
 
   (windmove-default-keybindings)
-  (global-hl-line-mode)
+  (global-hl-line-mode 1)
+
   (auto-fill-mode -1)
   (global-display-line-numbers-mode 1)
 
@@ -982,6 +983,9 @@ The DWIM behaviour of this command is as follows:
                                   :matchers '("begin" "$1" "$" "$$" "\\(" "\\[")))
   (org-ditaa-jar-path "/usr/share/java/ditaa/ditaa-0.11.jar")
   :config
+  ;; (add-hook 'org-mode-hook (lambda () (progn
+  ;;                                       (message "Disabling hl-line-mode for org-mode")
+  ;;                                       (hl-line-mode -1))))
   (defun sorend/org-grep (&optional initial)
     (interactive "P")
     (consult-ripgrep org-directory initial))
@@ -994,6 +998,17 @@ The DWIM behaviour of this command is as follows:
      (python . t)
      (ditaa . t)))
   (add-hook 'org-mode-hook #'visual-line-mode)
+
+  (require 'color)
+  (defun my/brighten-hl-line-foreground ()
+    "Make the hl-line foreground brighter in terminal, keeping background as-is."
+    (unless (display-graphic-p) ;; only for TTY
+      (let* ((current-fg (face-foreground 'hl-line nil t))
+             ;; brighten the color by 40% (factor between 0 and 1)
+             (bright-fg (color-lighten-name (or current-fg "white") 40)))
+        (set-face-foreground 'hl-line bright-fg))))
+  (add-hook 'org-mode-hook #'my/brighten-hl-line-foreground)
+
   ;; latex headlines can be ignored
   ;; latex can handle IEEEtran class
   (with-eval-after-load 'ox-latex
@@ -1181,6 +1196,7 @@ The DWIM behaviour of this command is as follows:
         gptel-expert-commands t
         gptel-track-media t
         gptel-include-reasoning 'ignore
+        gptel-model 'gpt-5
         gptel-log-level 'info
         gptel-include-tool-results t)
 
@@ -1193,18 +1209,29 @@ The DWIM behaviour of this command is as follows:
   (require 'gptel)
   (require 'gptel-curl)
   (require 'gptel-transient)
-  (require 'gptel-integrations))
+  (require 'gptel-integrations)
 
-;; add my own gptel tooling
-(use-package sorend-gptel
-  :ensure nil
-  :load-path "~/.emacs.d/lisp/"
-  :after (project gptel)
-  :custom
-  (sorend-gptel-respect-ignores t)
-  (sorend-gptel-max-files 1000)
+  (macher-install))
+
+(use-package gptel-prompts
+  :vc (:url "https://github.com/jwiegley/gptel-prompts.git" :rev :newest)
+  :after (gptel)
+  :ensure t
+  :demand t
   :config
-  (sorend-gptel-register-gptel-tools))
+  (gptel-prompts-update)
+  ;; Ensure prompts are updated if prompt files change
+  (gptel-prompts-add-update-watchers))
+
+;; (use-package workspace-tools
+;;   :ensure nil
+;;   :load-path "~/.emacs.d/lisp/"
+;;   :after (project gptel)
+;;   :custom
+;;   (workspace-tools-respect-ignores t)
+;;   (workspace-tools-max-files 1000)
+;;   :config
+;;   (workspace-tools-register-gptel-tools))
 
 
 (use-package mcp
