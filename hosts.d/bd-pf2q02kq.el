@@ -7,6 +7,7 @@
 
 (setq feature-gptel-copilot? t)
 (setq feature-gptel-gemini? nil)
+(setq feature-gptel-deekseek? nil)
 (setq feature-mcp? nil)
 
 (provide 'bd-pf2q02kq)

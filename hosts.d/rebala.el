@@ -6,6 +6,7 @@
 
 (setq feature-gptel-copilot? t)
 (setq feature-gptel-gemini? t)
+(setq feature-gptel-deepseek? t)
 (setq feature-mcp? t)
 
 (setq my-org-directory (expand-file-name "~/Mega/notes/"))

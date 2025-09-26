@@ -484,7 +484,7 @@ The DWIM behaviour of this command is as follows:
   ;; display the magit in a full screen buffer
   (setq magit-display-buffer-function
         'magit-display-buffer-fullframe-status-v1)
-  (setq magit-fetch-arguments '("--prune"))
+  (setq magit-fetch-arguments '("--prune")))
 
 ;; add forges
 (use-package forge
@@ -588,9 +588,14 @@ The DWIM behaviour of this command is as follows:
   (defun sorend/replace-alist-value (alist key new-value)
     (cl-subst (cons key new-value) (assoc key alist) alist))
 
-  (setq eglot-server-programs (sorend/replace-alist-value eglot-server-programs '(yaml-ts-mode yaml-mode)
-                                                          (eglot-alternatives '(("yaml-language-server" "--stdio")
-                                                                                ("npx" "-y" "@ansible/ansible-language-server" "--stdio")))))
+  ;; (setq eglot-server-programs (sorend/replace-alist-value eglot-server-programs '(yaml-ts-mode yaml-mode)
+  ;;                                                         (eglot-alternatives '(("yaml-language-server" "--stdio")
+  ;;                                                                               ("npx" "-y" "@ansible/ansible-language-server" "--stdio")))))
+
+  (add-to-list 'eglot-server-programs '((yaml-ts-mode yaml-mode) . (eglot-alternatives '(("yaml-language-server" "--stdio")
+                                                                                         ("npx" "-y" "@ansible/ansible-language-server" "--stdio")))))
+  (add-to-list 'eglot-server-programs '((dockerfile-mode dockerfile-ts-mode) . ("npx" "-y" "dockerfile-language-server-nodejs" "--stdio")))
+
   )
 
 (use-package uv-mode
@@ -669,6 +674,20 @@ The DWIM behaviour of this command is as follows:
 ;; LaTeX setup
 ;;
 
+
+;; convert pdf to ps and use pr-buffer (pr-interface) for printing pdfs
+(defun sorend/pdf-to-ps-and-print ()
+  "Convert current PDF to PostScript and send to printer using pr-interface."
+  (interactive)
+  (let* ((pdf (buffer-file-name))
+         (ps-file (concat (file-name-sans-extension pdf) ".ps")))
+    (when (and pdf (file-exists-p pdf))
+      (call-process "pdftops" nil nil nil pdf ps-file)
+      (with-temp-buffer
+        (insert-file-contents ps-file)
+        (pr-interface))
+      (delete-file ps-file))))
+
 (use-package pdf-tools
   :ensure t
   :custom
@@ -680,8 +699,9 @@ The DWIM behaviour of this command is as follows:
   (pdf-tools-install t) ;; install without asking
   :bind
   (:map pdf-view-mode-map
-        ("C-s" . 'isearch-forward)
-        ("C-r" . 'isearch-backward)))
+        (("C-c C-p" . 'sorend/pdf-to-ps-and-print)
+         ("C-s" . 'isearch-forward)
+         ("C-r" . 'isearch-backward))))
 ;  (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
 ;  (define-key pdf-view-mode-map (kbd "C-r") 'isearch-backward))
 
@@ -1146,10 +1166,16 @@ The DWIM behaviour of this command is as follows:
   ;; (when feature-gptel-copilot?
   ;;   (gptel-make-gh-copilot "Copilot"))
 
-  ;; (when feature-gptel-gemini?
-  ;;   (gptel-make-gemini "Gemini" :key (auth-source-pick-first-password :host "generativelanguage.googleapis.com" :user "sorend@gmail.com^api-key") :stream t))
+  (when feature-gptel-deepseek?
+    (gptel-make-deepseek "DeepSeek"
+      :stream t
+      :key (auth-source-pick-first-password :host "platform.deepseek.com" :user "sorend@gmail.com")))
+
+  (when feature-gptel-gemini?
+    (gptel-make-gemini "Gemini" :key (auth-source-pick-first-password :host "generativelanguage.googleapis.com" :user "sorend@gmail.com^api-key") :stream t))
 
   (setq gptel-backend (gptel-make-gh-copilot "Copilot"))
+  (setq gptel-model 'claude-sonnet-4)
 
   (setq gptel-default-mode 'org-mode
         gptel-expert-commands t
@@ -1167,19 +1193,18 @@ The DWIM behaviour of this command is as follows:
   (require 'gptel)
   (require 'gptel-curl)
   (require 'gptel-transient)
-  (require 'gptel-integrations)
+  (require 'gptel-integrations))
 
-  (macher-install))
-
-;; (use-package workspace-tools
-;;   :ensure nil
-;;   :load-path "~/.emacs.d/lisp/"
-;;   :after (project gptel)
-;;   :custom
-;;   (workspace-tools-respect-ignores t)
-;;   (workspace-tools-max-files 1000)
-;;   :config
-;;   (workspace-tools-register-gptel-tools))
+;; add my own gptel tooling
+(use-package sorend-gptel
+  :ensure nil
+  :load-path "~/.emacs.d/lisp/"
+  :after (project gptel)
+  :custom
+  (sorend-gptel-respect-ignores t)
+  (sorend-gptel-max-files 1000)
+  :config
+  (sorend-gptel-register-gptel-tools))
 
 
 (use-package mcp
@@ -1196,8 +1221,7 @@ The DWIM behaviour of this command is as follows:
   (require 'mcp-hub)
   ;; shutdown mcp servers when emacs is going to exit (i.e. don't ask to kill mcp processes)
   (advice-add #'save-buffers-kill-terminal :before #'mcp-hub-close-all-server)
-  :hook
-  (after-init . mcp-hub-start-all-server)
+  ;; :hook (after-init . mcp-hub-start-all-server)
   )
 
 
@@ -1254,6 +1278,14 @@ The DWIM behaviour of this command is as follows:
 
 (use-package ansible
   :ensure t
+  )
+
+(use-package wakatime-mode
+  :ensure t
+  :custom
+  (wakatime-api-key (auth-source-pick-first-password :host "wakatime.com" :user "sorend"))
+  :config
+  (global-wakatime-mode)
   )
 
 
