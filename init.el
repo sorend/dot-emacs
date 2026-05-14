@@ -9,7 +9,8 @@
 (when sorend/check-mode
   (setq use-package-always-ensure nil
         use-package-always-defer nil
-        use-package-ensure-function #'ignore))
+        use-package-ensure-function #'ignore
+        package-delete-old-versions t))
 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 
@@ -750,18 +751,6 @@ The DWIM behaviour of this command is as follows:
 (use-package cdlatex
   :ensure t)
 
-(use-package auto-dictionary
-  :ensure t
-  :if (not sorend/check-mode)
-  :init
-  (add-hook 'flyspell-mode-hook (lambda () (auto-dictionary-mode 1))))
-
-;; (use-package company-auctex
-;;   :ensure t
-;;   :after tex-site company yasnippet
-;;   :hook LaTeX-mode
-;;   :init (company-auctex-init))
-
 (use-package tex-site
   ;; :straight auctex
   :ensure auctex
@@ -1188,14 +1177,6 @@ The DWIM behaviour of this command is as follows:
   ;; :custom
   ;; ((1password-results-formatter . '1password-colour-formatter)))
 
-(use-package macher
-  :vc (:url "https://github.com/kmontag/macher" :rev :newest)
-  :ensure t
-  :custom
-  ;; The org UI has structured navigation and nice content folding.
-  (macher-action-buffer-ui 'org)
-  )
-
 
 (use-package gptel
   :ensure t
@@ -1288,20 +1269,6 @@ The DWIM behaviour of this command is as follows:
   (advice-add #'save-buffers-kill-terminal :before #'mcp-hub-close-all-server)
   ;; :hook (after-init . mcp-hub-start-all-server)
   )
-
-
-;; (use-package aidermacs
-;;   :ensure t
-;;   :vc (:url "https://github.com/MatthewZMD/aidermacs" :rev :newest :main-file "aidermacs.el")
-;;   :config
-;;   (setq aidermacs-args '("--model" "openai/claude-sonnet-4")) ;; OPENAI_BASE_URL is set to copilot
-;;   (setenv "OPENAI_API_KEY" (auth-source-pick-first-password :host "api.githubcopilot.com" :user "sad_bankdata^token"))
-;;   (setenv "OPENAI_API_BASE" "https://api.githubcopilot.com")
-;;   (global-set-key (kbd "C-c a") 'aidermacs-transient-menu))
-
-;; (add-to-list 'load-path "~/.emacs.d/")
-;; (require 'sorend/gptel-tools)
-
 
 (defun crontab-e ()
     "Run `crontab -e' in a emacs buffer."
