@@ -1,5 +1,5 @@
 EMACS ?= emacs
-EMACSFLAGS := --batch --eval "(setq user-emacs-directory default-directory)"
+EMACSFLAGS := -Q --batch --eval "(setq user-emacs-directory default-directory)"
 CHECKFLAGS ?=
 EL_FILES := early-init.el init.el $(wildcard lisp/*.el) $(wildcard hosts.d/*.el)
 
