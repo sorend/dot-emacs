@@ -3,6 +3,14 @@
 (require 'package)
 (package-initialize)
 
+(defconst sorend/check-mode (bound-and-true-p sorend-check-mode)
+  "Non-nil when running command-line config checks.")
+
+(when sorend/check-mode
+  (setq use-package-always-ensure nil
+        use-package-always-defer nil
+        use-package-ensure-function #'ignore))
+
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 
 ;; no warnings/compile-log
@@ -13,7 +21,24 @@
 
 ;; load host specifics
 (add-to-list 'load-path "~/.emacs.d/hosts.d/")
-(require (intern (downcase system-name)))
+(if sorend/check-mode
+    (setq feature-notmuch? nil
+          feature-1password? nil
+          feature-wsl? nil
+          feature-gptel-copilot? nil
+          feature-gptel-gemini? nil
+          feature-gptel-deepseek? nil
+          feature-mcp? nil)
+  (let ((host-config (intern (downcase system-name))))
+    (if (locate-library (symbol-name host-config))
+        (require host-config)
+      (setq feature-notmuch? nil
+            feature-1password? nil
+            feature-wsl? nil
+            feature-gptel-copilot? nil
+            feature-gptel-gemini? nil
+            feature-gptel-deepseek? nil
+            feature-mcp? nil))))
 
 ;; required for magit
 (use-package transient :ensure t)
@@ -34,7 +59,8 @@
   (auto-package-update-prompt-before-update t)
   (auto-package-update-hide-results t)
   :config
-  (auto-package-update-maybe))
+  (unless sorend/check-mode
+    (auto-package-update-maybe)))
   ;; (auto-package-update-at-time "09:00"))
 
 ;;
@@ -70,10 +96,11 @@
   (auto-fill-mode -1)
   (global-display-line-numbers-mode 1)
 
-  (auth-source-pass-enable) ;; start auth source pass
-  (setq auth-source-debug nil ;; show output
-        auth-source-do-cache t ;; cache
-        auth-sources '(password-store))
+  (unless sorend/check-mode
+    (auth-source-pass-enable) ;; start auth source pass
+    (setq auth-source-debug nil ;; show output
+          auth-source-do-cache t ;; cache
+          auth-sources '(password-store)))
 
   ;; ediff
   (setq ediff-split-window-function 'split-window-horizontally
@@ -697,7 +724,8 @@ The DWIM behaviour of this command is as follows:
   (pdf-misc-print-programm "/usr/bin/lpr")
   (pdf-misc-print-programm-args (quote ("-o media=A4" "-o fitplot")))
   :config
-  (pdf-tools-install t) ;; install without asking
+  (unless sorend/check-mode
+    (pdf-tools-install t)) ;; install without asking
   :bind
   (:map pdf-view-mode-map
         (("C-c C-p" . 'sorend/pdf-to-ps-and-print)
@@ -724,6 +752,7 @@ The DWIM behaviour of this command is as follows:
 
 (use-package auto-dictionary
   :ensure t
+  :if (not sorend/check-mode)
   :init
   (add-hook 'flyspell-mode-hook (lambda () (auto-dictionary-mode 1))))
 
@@ -1170,6 +1199,7 @@ The DWIM behaviour of this command is as follows:
 
 (use-package gptel
   :ensure t
+  :if (not sorend/check-mode)
   :bind
   (("C-c g RET" . gptel-send)
    ("C-c g c" . gptel)
@@ -1217,6 +1247,7 @@ The DWIM behaviour of this command is as follows:
   :vc (:url "https://github.com/jwiegley/gptel-prompts.git" :rev :newest)
   :after (gptel)
   :ensure t
+  :if (not sorend/check-mode)
   :demand t
   :config
   (gptel-prompts-update)
@@ -1316,6 +1347,7 @@ The DWIM behaviour of this command is as follows:
 
 (use-package wakatime-mode
   :ensure t
+  :if (not sorend/check-mode)
   :custom
   (wakatime-api-key (auth-source-pick-first-password :host "wakatime.com" :user "sorend"))
   :config
@@ -1329,7 +1361,8 @@ The DWIM behaviour of this command is as follows:
 ;;
 ;; welcome startup
 ;;
-(find-file (expand-file-name "welcome.org" my-org-directory))
+(unless sorend/check-mode
+  (find-file (expand-file-name "welcome.org" my-org-directory)))
 
 ;; Local Variables:
 ;; End:

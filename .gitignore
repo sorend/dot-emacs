@@ -1,7 +1,11 @@
 /*
+*.elc
 !README.md
 !init.el
 !Makefile
+!/.github/
+!/.github/workflows/
+!/.github/workflows/*.yml
 !/lisp
 !mail
 !early-init.el
