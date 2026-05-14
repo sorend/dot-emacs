@@ -1233,16 +1233,23 @@ The DWIM behaviour of this command is as follows:
 ;;   :config
 ;;   (workspace-tools-register-gptel-tools))
 
+(use-package agent-shell
+  :ensure t)
+    ;; :ensure-system-package
+    ;; ;; Add agent installation configs here
+    ;; ((claude . "brew install claude-code")
+    ;;  (claude-agent-acp . "npm install -g @zed-industries/claude-agent-acp")))
+
 
 (use-package mcp
   :ensure t
   :after gptel  ;; startup when gptel is started
   :if feature-mcp?
   :custom
-  (mcp-hub-servers `(("github" . (:command "docker" :args ("run" "--rm" "-i" "-e" ,(format "GITHUB_PERSONAL_ACCESS_TOKEN=%s" (auth-source-pick-first-password :host "api.github.com" :user "sorend@gmail.com^mcp-token")) "ghcr.io/github/github-mcp-server")))
+  (mcp-hub-servers `(;; ("github" . (:command "docker" :args ("run" "--rm" "-i" "-e" ,(format "GITHUB_PERSONAL_ACCESS_TOKEN=%s" (auth-source-pick-first-password :host "api.github.com" :user "sorend@gmail.com^mcp-token")) "ghcr.io/github/github-mcp-server")))
                      ;; ("brave" . (:command "npx" :args ("-y" "@modelcontextprotocol/server-brave-search") :env (:BRAVE_API_KEY ,(auth-source-pick-first-password :host "api.search.brave.com" :user "soren@hamisoke.com^api-key"))))
                      ("context7" . (:command "npx" :args ("-y" "@upstash/context7-mcp@latest")))
-                     ("searx" . (:command "npx" :args ("-y" "@kevinwatt/mcp-server-searxng") :env (:SEARXNG_INSTANCES "https://searxng.ayu-banana.ts.net,https://searx.perennialte.ch,https://searx.oloke.xyz")))
+                     ;; ("searx" . (:command "npx" :args ("-y" "@kevinwatt/mcp-server-searxng") :env (:SEARXNG_INSTANCES "https://searxng.ayu-banana.ts.net,https://searx.perennialte.ch,https://searx.oloke.xyz")))
                      ))
   :config
   (require 'mcp-hub)
@@ -1314,6 +1321,9 @@ The DWIM behaviour of this command is as follows:
   :config
   (global-wakatime-mode)
   )
+
+(use-package trashed
+  :ensure t)
 
 
 ;;
