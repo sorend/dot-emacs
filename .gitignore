@@ -1,6 +1,7 @@
 /*
 !README.md
 !init.el
+!Makefile
 !/lisp
 !mail
 !early-init.el
