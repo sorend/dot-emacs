@@ -19,6 +19,4 @@ jobs:
           sudo apt-get install -y emacs-nox
 
       - name: Run make check
-        env:
-          CHECKFLAGS: --eval "(setq sorend-check-mode t)"
         run: make check

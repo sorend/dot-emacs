@@ -1,7 +1,7 @@
 EMACS ?= emacs
 EMACSFLAGS := -Q --batch --eval "(setq user-emacs-directory default-directory)"
 CHECKFLAGS ?=
-EL_FILES := early-init.el init.el $(wildcard lisp/*.el) $(wildcard hosts.d/*.el)
+EL_FILES := early-init.el init.el $(wildcard lisp/*.el)
 
 .PHONY: help compile validate check clean
 
@@ -18,7 +18,7 @@ compile:
 	  $(CHECKFLAGS) \
 	  --eval "(require 'package)" \
 	  --eval "(package-initialize)" \
-	  -L lisp -L hosts.d \
+	  -L lisp \
 	  -f batch-byte-compile $(EL_FILES)
 
 validate:
@@ -27,4 +27,4 @@ validate:
 check: compile validate
 
 clean:
-	rm -f *.elc lisp/*.elc hosts.d/*.elc
+	rm -f *.elc lisp/*.elc

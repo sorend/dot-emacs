@@ -3,10 +3,32 @@
 (require 'package)
 (package-initialize)
 
-(defconst sorend/check-mode (bound-and-true-p sorend-check-mode)
-  "Non-nil when running command-line config checks.")
+(defvar sorend/denote-directory (expand-file-name "~/Mega/notes/")
+  "Default notes directory. Override in ~/.emacs.d/local.el if needed.")
 
-(when sorend/check-mode
+(defvar feature-mcp? nil
+  "Enable MCP integration when non-nil. Override in ~/.emacs.d/local.el.")
+
+(let ((local-config (locate-user-emacs-file "local.el")))
+  (when (file-exists-p local-config)
+    (load local-config nil t)))
+
+(defun sorend/notmuch-p ()
+  "Return non-nil when notmuch is available and configured locally."
+  (and (executable-find "notmuch")
+       (file-directory-p (expand-file-name "~/Mail/.notmuch"))))
+
+(defun sorend/wsl-p ()
+  "Return non-nil when running inside Windows Subsystem for Linux."
+  (and (eq system-type 'gnu/linux)
+       (or (getenv "WSL_INTEROP")
+           (getenv "WSL_DISTRO_NAME")
+           (and (file-readable-p "/proc/version")
+                (with-temp-buffer
+                  (insert-file-contents "/proc/version")
+                  (string-match-p "Microsoft\\|WSL" (buffer-string)))))))
+
+(when noninteractive
   (setq use-package-always-ensure nil
         use-package-always-defer nil
         use-package-ensure-function #'ignore
@@ -14,38 +36,17 @@
 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 
-;; no warnings/compile-log
+;; Startup noise
 (add-to-list 'display-buffer-alist
              '("\\`\\*\\(Warnings\\|Compile-Log\\)\\*\\'"
                (display-buffer-no-window)
                (allow-no-window . t)))
 
-;; load host specifics
-(add-to-list 'load-path "~/.emacs.d/hosts.d/")
-(if sorend/check-mode
-    (setq feature-notmuch? nil
-          feature-1password? nil
-          feature-wsl? nil
-          feature-gptel-copilot? nil
-          feature-gptel-gemini? nil
-          feature-gptel-deepseek? nil
-          feature-mcp? nil)
-  (let ((host-config (intern (downcase system-name))))
-    (if (locate-library (symbol-name host-config))
-        (require host-config)
-      (setq feature-notmuch? nil
-            feature-1password? nil
-            feature-wsl? nil
-            feature-gptel-copilot? nil
-            feature-gptel-gemini? nil
-            feature-gptel-deepseek? nil
-            feature-mcp? nil))))
-
-;; required for magit
+;; Core dependencies
 (use-package transient :ensure t)
 
 
-;; configure custom file
+;; Customizations file
 (use-package cus-edit
   :ensure nil
   :custom
@@ -53,6 +54,7 @@
   :init
   (load custom-file :no-error-if-file-is-missing))
 
+;; Package maintenance
 (use-package auto-package-update
   :ensure t
   :custom
@@ -60,30 +62,28 @@
   (auto-package-update-prompt-before-update t)
   (auto-package-update-hide-results t)
   :config
-  (unless sorend/check-mode
+  (unless noninteractive
     (auto-package-update-maybe)))
   ;; (auto-package-update-at-time "09:00"))
 
-;;
-;; general configuration features
-;;
+;; Core editor behavior
 (use-package emacs
   :ensure nil
   :config
-  (when (window-system)
+  (when (display-graphic-p)
     (menu-bar-mode -1)
     ;; (scroll-bar-mode -1)
-    (setq-default fram-title-format '("Emacs " emacs-version)))
+    (setq frame-title-format '("Emacs " emacs-version)))
 
   (recentf-mode 1)
   (add-to-list 'default-frame-alist '(font . "Iosevka Nerd Font-15"))
   ;; (add-to-list 'default-frame-alist '(line-spacing . 0.2))
 
   (set-face-attribute 'default nil :height 125)
-  (set-face-attribute 'default nil :height 125)
 
-  (setq inhibit-splash-screen t)
-  (setq inhibit-startup-message t)
+  (setq inhibit-splash-screen t
+        inhibit-startup-message t
+        use-short-answers t)
 
   ;; (setq garbage-collection-messages t)
   (add-function :after
@@ -97,7 +97,7 @@
   (auto-fill-mode -1)
   (global-display-line-numbers-mode 1)
 
-  (unless sorend/check-mode
+  (unless noninteractive
     (auth-source-pass-enable) ;; start auth source pass
     (setq auth-source-debug nil ;; show output
           auth-source-do-cache t ;; cache
@@ -119,7 +119,6 @@
   ;; diable warnings
   (setq warning-minimum-level :error)
 
-  (setq inhibit-startup-message t)
   (setq-default c-basic-offset 4
                 indent-tabs-mode nil
                 tab-width 4
@@ -135,8 +134,6 @@
   ;; (load-theme 'modus-vivendi t)
   (load-theme 'modus-vivendi-tinted t)
   (setq modus-themes-org-blocks 'tinted)
-  ;; yes/no -> y/n
-  (defalias 'yes-or-no-p 'y-or-n-p)
   (setq revert-without-query '(".*pdf$"))
   ;; display time mode on
   ;; (display-time-mode 1)
@@ -349,21 +346,8 @@ The DWIM behaviour of this command is as follows:
   :config
   (setq wgrep-auto-save-buffer t))
 
-;; (use-package beacon
-;;   :config
-;;   (beacon-mode 1))
-
 (use-package dash
   :ensure t)
-
-;; (use-package better-defaults
-;;   :straight (:host nil :repo "https://github.com/emacsmirror/better-defaults")
-;; ;;  :straight (:host nil :repo "https://git.sr.ht/~technomancy/better-defaults")
-;;   :config
-;;   (setq backup-directory-alist
-;;         `((".*" . ,temporary-file-directory)))
-;;   (setq auto-save-file-name-transforms
-;;         `((".*" ,temporary-file-directory t))))
 
 (use-package corfu
   :ensure t
@@ -392,7 +376,6 @@ The DWIM behaviour of this command is as follows:
         ;; ([backtab] . corfu-previous))
   :init
   (global-corfu-mode)
-  (corfu-history-mode)
   :config
   (setq tab-always-indent 'complete)
   (setq corfu-preview-current nil)
@@ -462,7 +445,7 @@ The DWIM behaviour of this command is as follows:
 
 ;; needed for groovy mode
 (use-package cl-lib
-  :ensure t)
+  :ensure nil)
 (use-package groovy-mode
   :ensure t)
 (use-package dockerfile-mode
@@ -572,7 +555,7 @@ The DWIM behaviour of this command is as follows:
   (nyan-mode))
 
 
-(when (string= system-type "gnu/linux")
+(when (eq system-type 'gnu/linux)
   (use-package exec-path-from-shell
     :ensure t
     :config
@@ -655,7 +638,7 @@ The DWIM behaviour of this command is as follows:
 (use-package which-key
   :ensure nil
   :config
-  (setq which-key-show-erly-on-C-h t)
+  (setq which-key-show-early-on-C-h t)
   (setq which-key-idle-delay 3)
   (setq which-key-idle-secondary-delay 0.05)
   (which-key-mode))
@@ -725,7 +708,7 @@ The DWIM behaviour of this command is as follows:
   (pdf-misc-print-programm "/usr/bin/lpr")
   (pdf-misc-print-programm-args (quote ("-o media=A4" "-o fitplot")))
   :config
-  (unless sorend/check-mode
+  (unless noninteractive
     (pdf-tools-install t)) ;; install without asking
   :bind
   (:map pdf-view-mode-map
@@ -832,15 +815,12 @@ The DWIM behaviour of this command is as follows:
    :map ebib-multiline-mode-map
    ("C-c C-c" . ebib-quit-multiline-buffer-and-save)))
 
-(unless (boundp 'my-org-directory)
-  (setq my-org-directory (expand-file-name "~/Mega/notes/")))
-
-(setq my-org-download-directory (file-name-concat my-org-directory "images"))
+(setq my-org-download-directory (file-name-concat sorend/denote-directory "images"))
 
 ;; functions to setup
 (use-package notmuch
   :vc (:url "https://github.com/notmuch/notmuch" :rev :newest)
-  :if feature-notmuch?
+  :if (sorend/notmuch-p)
   :after message gnus-alias
   :custom
   (notmuch-fcc-dirs '(("sorend@gmail.com" . nil)))
@@ -861,7 +841,7 @@ The DWIM behaviour of this command is as follows:
   ;; use gnus-alias X-Message-SMTP-Header
 (use-package gnus-alias
   :ensure t
-  :if feature-notmuch?
+  :if (sorend/notmuch-p)
   :custom
   (gnus-alias-identity-alist
    '(("gmail" "" "Soren A D <sorend@gmail.com>" ""
@@ -887,7 +867,7 @@ The DWIM behaviour of this command is as follows:
 ;; allow to switch identity while writing mail
 (use-package message
   ;; :straight (:type built-in)
-  :if feature-notmuch?
+  :if (sorend/notmuch-p)
   :bind
   (:map message-mode-map
         ("C-c C-i" . sorend/message-switch-identity))
@@ -903,7 +883,7 @@ The DWIM behaviour of this command is as follows:
 (use-package notmuch-x
   ;; :straight (notmuch-x :host github :repo "bcardoso/notmuch-x")
   :vc (:url "https://github.com/bcardoso/notmuch-x" :rev :newest)
-  :if feature-notmuch?
+  :if (sorend/notmuch-p)
   :after notmuch
   :custom
   (notmuch-x-auto-update nil)
@@ -986,7 +966,7 @@ The DWIM behaviour of this command is as follows:
   (org-hide-emphasis-markers t)
   (org-startup-with-inline-images t)
   (org-image-actual-width '(300))
-  (org-directory my-org-directory)
+  (org-directory sorend/denote-directory)
   (org-default-notes-file org-directory)
   (org-latex-pdf-process '("latexmk -f -pdf -%latex -bibtex -interaction=nonstopmode -output-directory=%o %f"))
   ;; (org-capture-templates
@@ -1042,7 +1022,7 @@ The DWIM behaviour of this command is as follows:
   (("C-c n c" . org-capture)
    ("C-c n f" . sorend/org-grep)))
 
-(when window-system
+(when (display-graphic-p)
   (let* ((variable-tuple
           (cond ((x-list-fonts "ETBembo") '(:font "ETBembo"))
                 ((x-list-fonts "EB Garamond") '(:font "EB Garamond"))
@@ -1144,7 +1124,7 @@ The DWIM behaviour of this command is as follows:
   :no-require
   :config (citar-embark-mode))
 
-(when feature-wsl?
+(when (sorend/wsl-p)
   (defun wsl-copy-region-to-clipboard (start end)
     "Copy region to Windows clipboard."
     (interactive "r")
@@ -1166,21 +1146,9 @@ The DWIM behaviour of this command is as follows:
 
 (use-package fish-mode)
 
-
-(use-package 1password
-  :ensure t
-  ;; :straight '(1password :host github :repo "justinbarclay/1password.el" :branch "main")
-  :vc (:url "https://github.com/justinbarclay/1password.el" :rev :newest)
-  :if feature-1password?
-  :init
-  (1password-enable-auth-source))
-  ;; :custom
-  ;; ((1password-results-formatter . '1password-colour-formatter)))
-
-
 (use-package gptel
   :ensure t
-  :if (not sorend/check-mode)
+  :if (not noninteractive)
   :bind
   (("C-c g RET" . gptel-send)
    ("C-c g c" . gptel)
@@ -1189,17 +1157,6 @@ The DWIM behaviour of this command is as follows:
    ("C-c g a" . gptel-add-file))
 
   :config
-  ;; (when feature-gptel-copilot?
-  ;;   (gptel-make-gh-copilot "Copilot"))
-
-  (when feature-gptel-deepseek?
-    (gptel-make-deepseek "DeepSeek"
-      :stream t
-      :key (auth-source-pick-first-password :host "platform.deepseek.com" :user "sorend@gmail.com")))
-
-  (when feature-gptel-gemini?
-    (gptel-make-gemini "Gemini" :key (auth-source-pick-first-password :host "generativelanguage.googleapis.com" :user "sorend@gmail.com^api-key") :stream t))
-
   (setq gptel-backend (gptel-make-gh-copilot "Copilot"))
   (setq gptel-model 'claude-sonnet-4)
 
@@ -1228,22 +1185,12 @@ The DWIM behaviour of this command is as follows:
   :vc (:url "https://github.com/jwiegley/gptel-prompts.git" :rev :newest)
   :after (gptel)
   :ensure t
-  :if (not sorend/check-mode)
+  :if (not noninteractive)
   :demand t
   :config
   (gptel-prompts-update)
   ;; Ensure prompts are updated if prompt files change
   (gptel-prompts-add-update-watchers))
-
-;; (use-package workspace-tools
-;;   :ensure nil
-;;   :load-path "~/.emacs.d/lisp/"
-;;   :after (project gptel)
-;;   :custom
-;;   (workspace-tools-respect-ignores t)
-;;   (workspace-tools-max-files 1000)
-;;   :config
-;;   (workspace-tools-register-gptel-tools))
 
 (use-package agent-shell
   :ensure t)
@@ -1295,7 +1242,7 @@ The DWIM behaviour of this command is as follows:
   :bind
   (("C-c d" . denote-open-or-create))
   :custom
-  (denote-directory my-org-directory))
+  (denote-directory sorend/denote-directory))
 
 (use-package org-download
   :after org
@@ -1312,24 +1259,13 @@ The DWIM behaviour of this command is as follows:
   :ensure t
   )
 
-(use-package wakatime-mode
-  :ensure t
-  :if (not sorend/check-mode)
-  :custom
-  (wakatime-api-key (auth-source-pick-first-password :host "wakatime.com" :user "sorend"))
-  :config
-  (global-wakatime-mode)
-  )
-
 (use-package trashed
   :ensure t)
 
 
-;;
-;; welcome startup
-;;
-(unless sorend/check-mode
-  (find-file (expand-file-name "welcome.org" my-org-directory)))
+;; Welcome startup
+(unless noninteractive
+  (find-file (expand-file-name "welcome.org" sorend/denote-directory)))
 
 ;; Local Variables:
 ;; End:
